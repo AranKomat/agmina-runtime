@@ -11,6 +11,7 @@ import asyncio
 import hashlib
 import io
 import json
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -19,6 +20,12 @@ from pathlib import Path
 def add_parent_paths(streambudget_root: Path, physical_root: Path) -> None:
     sys.path.insert(0, str(streambudget_root / "src"))
     sys.path.insert(0, str(physical_root))
+
+
+def git_state(root: Path) -> dict[str, object]:
+    head = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+    dirty = bool(subprocess.check_output(["git", "-C", str(root), "status", "--porcelain"], text=True).strip())
+    return {"commit": head, "dirty": dirty}
 
 
 async def run(args: argparse.Namespace) -> dict:
@@ -356,8 +363,8 @@ async def run(args: argparse.Namespace) -> dict:
 
         result = {
             "protocol": "R1 read-only parent workflow smoke",
-            "streambudget_commit": "076783012377d074b82efd7aaf296a8175b3a7f4",
-            "physical_contract_commit": "61bf0f500e4855ae00dd4c122b4ba0cbd7e42f4b",
+            "streambudget_parent": git_state(args.streambudget_root),
+            "physical_contract": git_state(args.physical_root),
             "paid_model_calls": 0,
             "gpu_calls": 0,
             "native_actions": 0,

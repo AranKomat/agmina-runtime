@@ -24,6 +24,9 @@ class Endpoint(Contract):
     credential_env: str | None = Field(default=None, pattern=r"^[A-Z][A-Z0-9_]*$")
     model_name: str = "fixture"
     model_version: str | None = None
+    # Some OpenAI-compatible gateways omit the response model field. Missing is accepted only
+    # when the operator explicitly records that behavior; a present conflicting value still fails.
+    response_model_required: bool = True
     service_p95_ns: Ns = 100_000_000
     transport_p95_ns: Ns = 0
     margin_ns: Ns = 5_000_000

@@ -14,11 +14,11 @@ hardware, or physical-task result.
 | Stage | Status | Current evidence / next gate |
 |---|---|---|
 | R0 | **Complete** | Local software reproduction and validation passed; see `VALIDATION.md`. |
-| R1 | **Partial: fixture workflow integration** | Parent watch/discovery schedulers, parsers, ledgers, and Agmina delivery agree on fixtures; retained-campaign fault cases remain. |
-| R2 | **Pending** | Run one authorized real endpoint with direct-call equivalence, complete-output timing, and charge receipts. |
+| R1 | **Partial: retained read-only integration** | Fixture/fault integration, retained lineage comparison, and clock-reset/generation fences pass; a broader cross-product fault matrix and real task/episode identity fields remain. |
+| R2 | **Partial: endpoint handshake** | The first authorized OpenRouter trial exposed a provider response-model omission and later incomplete/timeout behavior; no direct/Agmina usable pair or charge reconciliation yet. |
 | R3 | **Pending** | Run paced 1/2/4/8-session load against the selected real endpoint. |
 | R4 | **Partial: synthetic only** | Deterministic scheduler replay and mock contention pass; real endpoint placement/cancellation study remains. |
-| R5 | **Pending** | Run fixed-camera StreamBudget quality/cost evaluation with held-out labels. |
+| R5 | **Partial: development baseline only** | Retained and visual-QA provenance audits pass, and a prior GLM/Gemini status baseline is recorded; the data is not held out, so no quality claim. |
 | R6 | **Pending** | Qualify a compatible stateless policy/simulator loop; preserve native action and safety gates. |
 | R7 | **Pending** | Compare one additional compute/site class with model and precision differences disclosed. |
 | R8 | **Pending** | Run one design-partner pilot and repeat the same protocol with a second partner. |
@@ -28,7 +28,7 @@ hardware, or physical-task result.
 ### R0 — Reproduce The Foundation
 
 - [x] Install the package and development/server dependencies in a supported environment.
-- [x] Run the complete local test suite: 136 passed at publication validation.
+- [x] Run the complete local test suite: 138 passed in the current workspace.
 - [x] Run compilation, repository/link checks, doctor, demo, replay, and synthetic paced load.
 - [x] Run Ruff and the authenticated localhost sidecar/SDK smoke.
 - [x] Build and import the wheel outside the source tree.
@@ -41,7 +41,8 @@ about model quality, GPU performance, StreamBudget quality, or robot competence.
 ### R1 — Read-Only Application Bridges
 
 - [x] Pin the StreamBudget interface commit used for the smoke: `076783012377d074b82efd7aaf296a8175b3a7f4`.
-- [x] Pin the physical-harness contract checkout used for the smoke: `61bf0f500e4855ae00dd4c122b4ba0cbd7e42f4b`.
+- [x] Record the Physical Harness contract checkout used for the smoke; current HEAD is
+  `20f5c9baf42158bf3d37e122984c0f2d03794014`.
 - [x] Run a no-network StreamBudget bridge smoke using its actual `Request` and `ImageInput` types.
 - [x] Run a no-network physical bridge smoke using its actual `Basis` and `FrameRef` types.
 - [x] Confirm source image hash, evidence sequence, capture/availability mapping, and simulator-time
@@ -55,27 +56,49 @@ about model quality, GPU performance, StreamBudget quality, or robot competence.
 - [x] Compare fixture prompt/image message order and response-format payloads at the StreamBudget
   boundary, while preserving the parent ledger as the accounting owner.
 - [x] Confirm invalid source bytes and a stale epoch are rejected after delivery.
-- [ ] Compare Agmina-generated source hash, image order/detail, prompt, cutoff, clock mapping,
-  task/episode identity, and accounting fields with the original StreamBudget request.
-- [ ] Run the StreamBudget bridge without changing watch, evidence-selection, parser, or ledger
+- [x] Compare Agmina-generated source hash, image order/detail, prompt, cutoff, clock mapping,
+  and accounting fields with the original retained StreamBudget requests; the report records that
+  the parent request supplies no task/episode identity fields.
+- [x] Run the StreamBudget bridge without changing watch, evidence-selection, parser, or ledger
   authority.
-- [ ] Pin the Physical Agent Harness commit and retained FrameRef campaign.
-- [ ] Run the physical-harness bridge in discovery/shadow mode only.
+- [x] Record the live parent checkout state for each smoke (the current Physical Harness checkout is
+  `20f5c9baf42158bf3d37e122984c0f2d03794014`; dirty state is reported rather than hidden).
+- [x] Run the physical-harness bridge in discovery/shadow mode only.
 - [ ] Exercise old-task results, late responses, epoch changes, invalid source hashes, and
   pending/in-flight shutdown in both bridge paths.
+- [x] Run the actual parent fault smoke: StreamBudget in-flight shutdown, Physical Harness late
+  response rejection, old-task historical-only delivery, and in-flight shutdown ambiguity.
+- [x] Run a two-path clock-reset/generation-fence smoke covering stale consumption, target-clock
+  mismatch, and expired mapping rejection.
 
 **Gate:** source-bound requests round-trip without semantic or authority changes.
 
-**Current evidence:** the workflow smoke passed on 2026-09-25 with zero paid calls, zero GPU work,
-and zero native actions. It exercised the actual StreamBudget watch scheduler and parent ledger,
-the Physical Harness discovery coordinator/journal/inventory writer, parent response validators,
-and Agmina submission, completion, consumption, source-lineage, and epoch-fence paths. It remains
-a synthetic fixture campaign: retained application evidence, late responses, clock reset, and
-pending/in-flight shutdown cases are still open, and no action was authorized.
+**Current evidence:** the workflow smoke `runs/r1-workflow-010` and fault campaign
+`runs/r1-fault-006` passed with zero paid calls, zero
+GPU work, and zero native actions. The fault campaign confirms StreamBudget does not publish an
+alert after an in-flight shutdown; Physical Harness archives a late result as an error, delivers
+an old-task result only as historical inventory without waking the current executive, and reports
+that an in-flight callback cannot be declared stopped until it exits. The retained request
+comparison `runs/r1-retained-004` verifies source hashes, image order/detail, prompt, cutoff, clock
+mapping, and parent accounting; task/episode identity is absent from the StreamBudget request
+contract. The clock-reset campaign `runs/r1-clock-005` rejects stale consumption, target-clock
+mismatch, and expired mappings for both adapters. Parent checkout commit and dirty state are
+retained in each report; the broader cross-product fault matrix remains open.
+
+The retained replay `runs/r1-retained-004` adds six source PNGs from two video identities using the
+receipt's original order, timestamps, sizes, and SHA-256 values. The native StreamBudget mock path
+and the Agmina-routed path each produced five admitted requests and two parent-visible alerts; all
+five routed request payloads were equivalent, and all reported lineage checks passed. This is
+read-only lineage and parent-behavior evidence, not a hosted model or quality result.
 
 ### R2 — One Real Endpoint
 
-- [ ] Select one model and one serving endpoint already useful for the chosen workload.
+- [x] Select one declared model and serving endpoint for the bounded transport trial: OpenRouter
+  `z-ai/glm-5.3-flash`, with the synthetic vision packet and no quality claim.
+- [x] Exercise the direct path and preserve provider-contract failures rather than silently retrying.
+- [x] Run the no-network preflight for provider order, exact request body, fallback policy,
+  reservation, and request fingerprint: `runs/r2-preflight-001`.
+- [ ] Complete one successful direct/Agmina pair on a pinned endpoint.
 - [ ] Record checkpoint/model revision, preprocessing, sampling, output schema, server revision,
   hardware, precision, routing, and declared budget before dispatch.
 - [ ] Run the same authorized packet directly and through Agmina.
@@ -84,6 +107,28 @@ pending/in-flight shutdown cases are still open, and no action was authorized.
 
 **Gate:** valid native outputs, equivalent intended requests, complete accounting, and measured
 timings. A transport pass is not a quality pass.
+
+**Current evidence:** the local comparison harness passed against a loopback chat server and proved
+identical validated request bodies and output fingerprints. The authorized hosted trial is not a
+pass: the provider returned HTTP 200 without the response `model` field, which the default strict
+binding rejected; an explicit `response_model_required=false` pin was then prepared, but the next
+attempt did not produce a complete report within the endpoint/tool timeout. Failed and uncertain
+attempts are retained under `runs/r2-transport-002` and `runs/r2-transport-003`; external charge
+status remains unknown and must be reconciled before any claim. The next R2 action is a fresh,
+operator-pinned endpoint or provider, not more blind retries of this route.
+
+The no-network preflight `runs/r2-preflight-001` passed with zero network and paid calls. It
+validated the exact outbound request body and fingerprint, the declared model contract, the `$0.25`
+campaign ceiling, the `$0.05` endpoint reservation, and the requested provider order
+`Together -> Fireworks -> Baseten -> CoreWeave` with fallbacks disabled. This is configuration and
+transport-readiness evidence only; it does not establish provider availability, endpoint latency,
+model quality, or a charge receipt.
+
+**Next endpoint candidate:** `configs/openrouter-glm.template.json` pins the requested provider
+preference order `Together -> Fireworks -> Baseten -> CoreWeave` with fallback disabled. Before a
+new paid run, replace the model revision/profile placeholders, confirm the provider order is
+supported by the account, and declare a fresh campaign cap. The route preference is not evidence
+that any particular provider actually served a request.
 
 ### R3 — Paced Multi-Session Load
 
@@ -107,8 +152,17 @@ timings. A transport pass is not a quality pass.
 **Current limitation:** synthetic replay is evidence for coordinator behavior only, not endpoint
 throughput or semantic quality.
 
+The consolidated profile-error replay `runs/r4-synthetic-001` offered 539 requests across policy,
+semantic, and mapping workloads under the same trace and compared FIFO, EDF, and least-slack. On
+this trace FIFO protected mapping (26/26 completed in time) but admitted only 2/335 policy requests
+in time; EDF admitted 108/335 policy requests in time while mapping fell to 7/26; least-slack was
+intermediate but had the highest queue and completion-age p95 values. This is a synthetic workload
+tradeoff, not an endpoint or quality result, and it reinforces the requirement to report outcomes by
+workload rather than selecting a universal scheduler winner.
+
 ### R5 — StreamBudget Quality And Cost
 
+- [x] Audit the retained six-frame campaign's receipt, frame hashes, timestamps, and video identities.
 - [ ] Freeze a fixed-camera workload, event taxonomy, held-out labels, negative segments, and
   quality/latency constraints.
 - [ ] Run fixed-rate VLM, tuned detector/motion refresh, and existing StreamBudget adaptive baselines.
@@ -117,6 +171,17 @@ throughput or semantic quality.
   tokens, bytes, GPU time where available, and cost per camera-hour.
 
 **Gate:** cost/capacity improvement while meeting the predeclared quality and latency constraints.
+
+The audit `runs/r5-audit-003` verifies all six retained-frame hashes and two video identities, but
+records `r5_qualification: not_qualified`: the receipt says evaluator-only annotation/resolution
+audit, `model_calls: 0`, and supplies no independent labels. The broader visual-QA audit
+`runs/r5-audit-visual-001` verifies all six packet hashes and 1,107 packet frames; its six-case
+label file is present, but the packet manifest explicitly says “Post-hoc development qualification,
+not a held-out benchmark.” The receipt audit `runs/r5-dev-audit-002` records 12 completed
+development trials (GLM and Gemini), 32 request attempts, and `$0.016686395` reported spend; all
+12 abstention/answerability statuses matched the rubric, but this is only a development status
+check, not answer-quality or held-out evidence. The next R5 step is to obtain or reserve an
+untouched held-out split, then freeze the event/latency protocol before model comparison.
 
 ### R6 — Policy/Simulator Closed Loop
 

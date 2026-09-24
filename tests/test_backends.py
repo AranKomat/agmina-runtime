@@ -59,6 +59,29 @@ async def test_stream_chat_complete(clock, session):
     await backend.close()
 
 
+async def test_stream_missing_response_model_is_terminal_and_explicitly_allowed(clock, session):
+    events = [
+        {"choices":[{"delta":{"content":"ok"}, "finish_reason":"stop"}]},
+        {"choices":[], "usage":{"prompt_tokens":1,"completion_tokens":1}},
+    ]
+    data = "".join("data: "+canonical(e)+"\n\n" for e in events) + "data: [DONE]\n\n"
+
+    strict_backend = HttpBackend(clock, transport=httpx.MockTransport(
+        lambda req: httpx.Response(200, text=data)))
+    with pytest.raises(BackendFailure) as exc:
+        await strict_backend.infer(packet(session, clock), chat_ep(stream=True))
+    assert exc.value.code == "stream_model_mismatch:<missing>"
+    assert exc.value.termination_known
+    await strict_backend.close()
+
+    permissive_backend = HttpBackend(clock, transport=httpx.MockTransport(
+        lambda req: httpx.Response(200, text=data)))
+    result = await permissive_backend.infer(
+        packet(session, clock), chat_ep(stream=True, response_model_required=False))
+    assert json.loads(result.payload_json) == {"text": "ok"}
+    await permissive_backend.close()
+
+
 @pytest.mark.parametrize("finish,done", [("length", True), ("stop", False), (None, True)])
 async def test_partial_stream_not_delivered(clock, session, finish, done):
     data = "data: "+canonical({"choices":[{"delta":{"content":"incomplete"},"finish_reason":finish}]})+"\n\n"
@@ -104,6 +127,24 @@ async def test_response_model_mismatch(clock, session):
         json={"model":"wrong-model", "choices":[]})))
     with pytest.raises(BackendFailure, match="response_model_mismatch"):
         await backend.infer(packet(session, clock), chat_ep())
+    await backend.close()
+
+
+async def test_http_200_provider_error_is_not_model_mismatch(clock, session):
+    backend = HttpBackend(clock, transport=httpx.MockTransport(lambda req: httpx.Response(200,
+        json={"error": {"code": "provider_busy", "message": "not retained"}})))
+    with pytest.raises(BackendFailure, match="provider_error:provider_busy"):
+        await backend.infer(packet(session, clock), chat_ep())
+    await backend.close()
+
+
+async def test_missing_response_model_can_be_explicitly_allowed(clock, session):
+    backend = HttpBackend(clock, transport=httpx.MockTransport(lambda req: httpx.Response(200,
+        json={"choices": [{"message": {"content": "ok"}, "finish_reason": "stop"}]})))
+    with pytest.raises(BackendFailure, match="response_model_mismatch"):
+        await backend.infer(packet(session, clock), chat_ep())
+    result = await backend.infer(packet(session, clock), chat_ep(response_model_required=False))
+    assert json.loads(result.payload_json)["text"] == "ok"
     await backend.close()
 
 

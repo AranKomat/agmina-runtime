@@ -204,8 +204,18 @@ class HttpBackend:
                         raise BackendFailure("response_byte_bound")
                 obj = strict_json(raw.decode("utf8"), max_bytes=endpoint.max_response_bytes)
                 if endpoint.kind == "chat":
-                    if obj.get("model") != endpoint.model_name:
-                        raise BackendFailure("response_model_mismatch", termination_known=True)
+                    if isinstance(obj.get("error"), dict):
+                        error_value = obj["error"].get("code") or obj["error"].get("type") or "unknown"
+                        error_code = error_value if isinstance(error_value, str) else "invalid"
+                        raise BackendFailure("provider_error:" + error_code[:128], termination_known=True)
+                    response_model = obj.get("model")
+                    if ((response_model is None and endpoint.response_model_required)
+                            or (response_model is not None and response_model != endpoint.model_name)):
+                        # Preserve the bounded identifier so an operator can correct a provider
+                        # alias without weakening exact response binding or logging response text.
+                        observed = response_model if isinstance(response_model, str) else "<missing>"
+                        raise BackendFailure("response_model_mismatch:" + observed,
+                                             termination_known=True)
                     choices = obj.get("choices", [])
                     if len(choices) != 1 or choices[0].get("finish_reason") != "stop":
                         raise BackendFailure("incomplete_chat_answer", termination_known=True)
@@ -253,8 +263,15 @@ class HttpBackend:
             if done:
                 raise ValueError("Content after DONE")
             obj = strict_json(value, max_bytes=endpoint.max_response_bytes)
-            if "model" in obj and obj["model"] != endpoint.model_name:
-                raise BackendFailure("stream_model_mismatch")
+            if isinstance(obj.get("error"), dict):
+                error_value = obj["error"].get("code") or obj["error"].get("type") or "unknown"
+                error_code = error_value if isinstance(error_value, str) else "invalid"
+                raise BackendFailure("provider_error:" + error_code[:128], termination_known=True)
+            if (("model" not in obj and endpoint.response_model_required)
+                    or ("model" in obj and obj["model"] != endpoint.model_name)):
+                observed_value = obj.get("model")
+                observed = observed_value if isinstance(observed_value, str) else "<missing>"
+                raise BackendFailure("stream_model_mismatch:" + observed, termination_known=True)
             if obj.get("usage") is not None:
                 usage = obj["usage"]
             choices = obj.get("choices", [])
