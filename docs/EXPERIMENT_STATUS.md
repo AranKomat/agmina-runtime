@@ -14,7 +14,7 @@ hardware, or physical-task result.
 | Stage | Status | Current evidence / next gate |
 |---|---|---|
 | R0 | **Complete** | Local software reproduction and validation passed; see `VALIDATION.md`. |
-| R1 | **Pending** | Add one read-only StreamBudget bridge, then one physical-harness bridge, against pinned application commits. |
+| R1 | **Partial: bridge smoke** | Both thin builders pass with the current parent types; full read-only application workflows remain. |
 | R2 | **Pending** | Run one authorized real endpoint with direct-call equivalence, complete-output timing, and charge receipts. |
 | R3 | **Pending** | Run paced 1/2/4/8-session load against the selected real endpoint. |
 | R4 | **Partial: synthetic only** | Deterministic scheduler replay and mock contention pass; real endpoint placement/cancellation study remains. |
@@ -40,7 +40,12 @@ about model quality, GPU performance, StreamBudget quality, or robot competence.
 
 ### R1 — Read-Only Application Bridges
 
-- [ ] Pin the StreamBudget application commit and retained-evidence campaign.
+- [x] Pin the StreamBudget interface commit used for the smoke: `076783012377d074b82efd7aaf296a8175b3a7f4`.
+- [x] Pin the physical-harness contract checkout used for the smoke: `61bf0f500e4855ae00dd4c122b4ba0cbd7e42f4b`.
+- [x] Run a no-network StreamBudget bridge smoke using its actual `Request` and `ImageInput` types.
+- [x] Run a no-network physical bridge smoke using its actual `Basis` and `FrameRef` types.
+- [x] Confirm source image hash, evidence sequence, capture/availability mapping, and simulator-time
+  preservation in the returned contracts.
 - [ ] Compare Agmina-generated source hash, image order/detail, prompt, cutoff, clock mapping,
   task/episode identity, and accounting fields with the original StreamBudget request.
 - [ ] Run the StreamBudget bridge without changing watch, evidence-selection, parser, or ledger
@@ -51,6 +56,10 @@ about model quality, GPU performance, StreamBudget quality, or robot competence.
   pending/in-flight shutdown in both bridge paths.
 
 **Gate:** source-bound requests round-trip without semantic or authority changes.
+
+**Current evidence:** the smoke passed on 2026-09-25 with zero paid calls, zero GPU work, and zero
+native actions. It exercised the thin conversion boundary only; it did not replace a parent model
+call, run a live watch/parser loop, or authorize an action.
 
 ### R2 — One Real Endpoint
 
