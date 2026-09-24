@@ -14,7 +14,7 @@ hardware, or physical-task result.
 | Stage | Status | Current evidence / next gate |
 |---|---|---|
 | R0 | **Complete** | Local software reproduction and validation passed; see `VALIDATION.md`. |
-| R1 | **Partial: workflow smoke** | Actual parent parsers and Agmina delivery pass with fixtures; parent scheduler/ledger replacement remains. |
+| R1 | **Partial: fixture workflow integration** | Parent watch/discovery schedulers, parsers, ledgers, and Agmina delivery agree on fixtures; retained-campaign fault cases remain. |
 | R2 | **Pending** | Run one authorized real endpoint with direct-call equivalence, complete-output timing, and charge receipts. |
 | R3 | **Pending** | Run paced 1/2/4/8-session load against the selected real endpoint. |
 | R4 | **Partial: synthetic only** | Deterministic scheduler replay and mock contention pass; real endpoint placement/cancellation study remains. |
@@ -48,6 +48,12 @@ about model quality, GPU performance, StreamBudget quality, or robot competence.
   preservation in the returned contracts.
 - [x] Deliver a fixture result through Agmina into StreamBudget's actual `Perception` validator.
 - [x] Deliver a fixture semantic result through Agmina into the Physical Harness discovery parser.
+- [x] Run the actual StreamBudget watch scheduler through both its native mock and Agmina-routed
+  fixture paths; compare parent-visible alert, ledger-attempt, and status results.
+- [x] Run the actual Physical Harness discovery coordinator, async worker, journal, and inventory
+  writer with Agmina inside the read-only worker callback.
+- [x] Compare fixture prompt/image message order and response-format payloads at the StreamBudget
+  boundary, while preserving the parent ledger as the accounting owner.
 - [x] Confirm invalid source bytes and a stale epoch are rejected after delivery.
 - [ ] Compare Agmina-generated source hash, image order/detail, prompt, cutoff, clock mapping,
   task/episode identity, and accounting fields with the original StreamBudget request.
@@ -61,9 +67,11 @@ about model quality, GPU performance, StreamBudget quality, or robot competence.
 **Gate:** source-bound requests round-trip without semantic or authority changes.
 
 **Current evidence:** the workflow smoke passed on 2026-09-25 with zero paid calls, zero GPU work,
-and zero native actions. It exercised actual parent response validators/parsers and Agmina's
-submission, completion, consumption, source-lineage, and epoch-fence paths. It did not replace a
-parent scheduler/model call, run a live watch loop, or authorize an action.
+and zero native actions. It exercised the actual StreamBudget watch scheduler and parent ledger,
+the Physical Harness discovery coordinator/journal/inventory writer, parent response validators,
+and Agmina submission, completion, consumption, source-lineage, and epoch-fence paths. It remains
+a synthetic fixture campaign: retained application evidence, late responses, clock reset, and
+pending/in-flight shutdown cases are still open, and no action was authorized.
 
 ### R2 — One Real Endpoint
 
