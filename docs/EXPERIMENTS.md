@@ -32,6 +32,21 @@ hashes, and pending/in-flight shutdown. Use the app's existing parsers and nativ
 **Pass:** source-bound packets make a round trip without changing application semantics or bypassing
 an existing guard. No model-quality improvement can be claimed from request equivalence alone.
 
+For the first no-network workflow smoke, install the two parent checkouts into an isolated
+environment and run the opt-in tool below. It uses a schema-valid fixture backend, feeds the
+delivered response into the actual StreamBudget and Physical Harness validators, and exercises
+invalid-source and stale-epoch rejection. It does not run a parent watch scheduler, make a model
+call, or authorize an action:
+
+```bash
+uv pip install --python .venv/bin/python \
+  -e /path/to/streambudget -e /path/to/physical-agent-harness
+PYTHONPATH=src .venv/bin/python tools/r1_read_only_smoke.py \
+  --streambudget-root /path/to/streambudget \
+  --physical-root /path/to/physical-agent-harness \
+  --out runs/r1-workflow-001
+```
+
 ## R2 — one actual endpoint, one workload
 
 Select a model already known to produce useful outputs for that workload. Do not restart a broad
