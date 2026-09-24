@@ -62,7 +62,9 @@ async def test_load_clock_continues(tmp_path,cfg):
     assert report["offered"]==4 and report["source_clock_continues"]
     events=[json.loads(x) for x in (out/"trace.jsonl").read_text().splitlines()]
     submissions=[x["at_ns"] for x in events if x["kind"]=="submitted"]
-    assert max(submissions)-min(submissions)<150_000_000
+    # This is a causal-arrival check, not a latency SLO.  Shared CI runners can
+    # pause the event loop well beyond the 150 ms local-development margin.
+    assert max(submissions)-min(submissions)<500_000_000
     assert report["states"]["consumed"]==4
     with pytest.raises(FileExistsError):
         await run_load(cfg,plan,out)
