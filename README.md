@@ -114,6 +114,7 @@ GPU batch.
 
 [Self-contained handoff](HANDOFF.md) · [Design and invariants](docs/DESIGN.md) ·
 [Integration instructions](docs/INTEGRATION.md) · [Experiment sequence](docs/EXPERIMENTS.md) ·
+[Experiment status checklist](docs/EXPERIMENT_STATUS.md) ·
 [Validation record](VALIDATION.md) · [Security/operations](SECURITY.md) ·
 [Primary references](docs/REFERENCES.md) · [Third-party boundaries](THIRD_PARTY.md)
 
