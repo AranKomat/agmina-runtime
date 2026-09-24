@@ -1,0 +1,34 @@
+{
+  "payload": {
+    "messages": [
+      {
+        "role": "system",
+        "content": "Return one small JSON object describing the visible shape. This is a synthetic transport probe."
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Describe the colored shape."
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAIAAABvFaqvAAAAJ0lEQVR4nGP4SiXAMGrQgBp0R0SEIBo1aNSgUYMoN4g8MGoQHQ0CADIuatxcd5mtAAAAAElFTkSuQmCC"
+            }
+          }
+        ]
+      }
+    ],
+    "response_format": {
+      "type": "json_object"
+    }
+  },
+  "observations": [
+    {
+      "source": "own-generated-PNG",
+      "sha256": "aa204dae87be8f3b3814c9c6db47b417bb2a278dd9f715e20f007f81273f3f28"
+    }
+  ]
+}

@@ -1,0 +1,186 @@
+{
+  "provenance": "Synthetic timer workers; NOT SAM/VLA/GLM inference",
+  "synthetic_inputs": true,
+  "jobs": [
+    {
+      "id": "job-0",
+      "session": "session-0",
+      "model": "policy",
+      "workload": "policy",
+      "release_ms": 0,
+      "deadline_after_ms": 1000,
+      "profile_capture_lag_ms": 0,
+      "result_kind": "historical",
+      "max_age_ms": null,
+      "evidence_hashes": [
+        "0000000000000000000000000000000000000000000000000000000000000000"
+      ],
+      "payload_json": "{\"fixture_delay_s\":0.02}"
+    },
+    {
+      "id": "job-1",
+      "session": "session-1",
+      "model": "semantic",
+      "workload": "semantic",
+      "release_ms": 2,
+      "deadline_after_ms": 1000,
+      "profile_capture_lag_ms": 0,
+      "result_kind": "historical",
+      "max_age_ms": null,
+      "evidence_hashes": [
+        "0000000000000000000000000000000000000000000000000000000000000000"
+      ],
+      "payload_json": "{\"fixture_delay_s\":0.02}"
+    },
+    {
+      "id": "job-2",
+      "session": "session-0",
+      "model": "mapping",
+      "workload": "mapping",
+      "release_ms": 4,
+      "deadline_after_ms": 1000,
+      "profile_capture_lag_ms": 0,
+      "result_kind": "historical",
+      "max_age_ms": null,
+      "evidence_hashes": [
+        "0000000000000000000000000000000000000000000000000000000000000000"
+      ],
+      "payload_json": "{\"fixture_delay_s\":0.02}"
+    },
+    {
+      "id": "job-3",
+      "session": "session-1",
+      "model": "policy",
+      "workload": "policy",
+      "release_ms": 6,
+      "deadline_after_ms": 1000,
+      "profile_capture_lag_ms": 0,
+      "result_kind": "historical",
+      "max_age_ms": null,
+      "evidence_hashes": [
+        "0000000000000000000000000000000000000000000000000000000000000000"
+      ],
+      "payload_json": "{\"fixture_delay_s\":0.02}"
+    },
+    {
+      "id": "job-4",
+      "session": "session-0",
+      "model": "semantic",
+      "workload": "semantic",
+      "release_ms": 8,
+      "deadline_after_ms": 1000,
+      "profile_capture_lag_ms": 0,
+      "result_kind": "historical",
+      "max_age_ms": null,
+      "evidence_hashes": [
+        "0000000000000000000000000000000000000000000000000000000000000000"
+      ],
+      "payload_json": "{\"fixture_delay_s\":0.02}"
+    },
+    {
+      "id": "job-5",
+      "session": "session-1",
+      "model": "mapping",
+      "workload": "mapping",
+      "release_ms": 10,
+      "deadline_after_ms": 1000,
+      "profile_capture_lag_ms": 0,
+      "result_kind": "historical",
+      "max_age_ms": null,
+      "evidence_hashes": [
+        "0000000000000000000000000000000000000000000000000000000000000000"
+      ],
+      "payload_json": "{\"fixture_delay_s\":0.02}"
+    },
+    {
+      "id": "job-6",
+      "session": "session-0",
+      "model": "policy",
+      "workload": "policy",
+      "release_ms": 12,
+      "deadline_after_ms": 1000,
+      "profile_capture_lag_ms": 0,
+      "result_kind": "historical",
+      "max_age_ms": null,
+      "evidence_hashes": [
+        "0000000000000000000000000000000000000000000000000000000000000000"
+      ],
+      "payload_json": "{\"fixture_delay_s\":0.02}"
+    },
+    {
+      "id": "job-7",
+      "session": "session-1",
+      "model": "semantic",
+      "workload": "semantic",
+      "release_ms": 14,
+      "deadline_after_ms": 1000,
+      "profile_capture_lag_ms": 0,
+      "result_kind": "historical",
+      "max_age_ms": null,
+      "evidence_hashes": [
+        "0000000000000000000000000000000000000000000000000000000000000000"
+      ],
+      "payload_json": "{\"fixture_delay_s\":0.02}"
+    },
+    {
+      "id": "job-8",
+      "session": "session-0",
+      "model": "mapping",
+      "workload": "mapping",
+      "release_ms": 16,
+      "deadline_after_ms": 1000,
+      "profile_capture_lag_ms": 0,
+      "result_kind": "historical",
+      "max_age_ms": null,
+      "evidence_hashes": [
+        "0000000000000000000000000000000000000000000000000000000000000000"
+      ],
+      "payload_json": "{\"fixture_delay_s\":0.02}"
+    },
+    {
+      "id": "job-9",
+      "session": "session-1",
+      "model": "policy",
+      "workload": "policy",
+      "release_ms": 18,
+      "deadline_after_ms": 1000,
+      "profile_capture_lag_ms": 0,
+      "result_kind": "historical",
+      "max_age_ms": null,
+      "evidence_hashes": [
+        "0000000000000000000000000000000000000000000000000000000000000000"
+      ],
+      "payload_json": "{\"fixture_delay_s\":0.02}"
+    },
+    {
+      "id": "job-10",
+      "session": "session-0",
+      "model": "semantic",
+      "workload": "semantic",
+      "release_ms": 20,
+      "deadline_after_ms": 1000,
+      "profile_capture_lag_ms": 0,
+      "result_kind": "historical",
+      "max_age_ms": null,
+      "evidence_hashes": [
+        "0000000000000000000000000000000000000000000000000000000000000000"
+      ],
+      "payload_json": "{\"fixture_delay_s\":0.02}"
+    },
+    {
+      "id": "job-11",
+      "session": "session-1",
+      "model": "mapping",
+      "workload": "mapping",
+      "release_ms": 22,
+      "deadline_after_ms": 1000,
+      "profile_capture_lag_ms": 0,
+      "result_kind": "historical",
+      "max_age_ms": null,
+      "evidence_hashes": [
+        "0000000000000000000000000000000000000000000000000000000000000000"
+      ],
+      "payload_json": "{\"fixture_delay_s\":0.02}"
+    }
+  ]
+}

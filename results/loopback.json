@@ -1,0 +1,11 @@
+{
+  "transport": "real localhost TCP/HTTP",
+  "backend": "synthetic mock",
+  "passed": true,
+  "idempotent_submit": true,
+  "current_delivery": true,
+  "old_epoch_rejected": true,
+  "external_requests": 0,
+  "gpu_models": 0,
+  "native_actions": 0
+}

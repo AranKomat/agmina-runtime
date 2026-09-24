@@ -1,0 +1,136 @@
+{
+  "python": "3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]",
+  "checks": [
+    {
+      "check": "ruff",
+      "status": "not_run_unavailable",
+      "passed": null
+    },
+    {
+      "check": "tests",
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "-m",
+        "pytest",
+        "-q"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "wall_s": 3.592542715000036
+    },
+    {
+      "check": "compile",
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "-m",
+        "compileall",
+        "-q",
+        "src",
+        "tests",
+        "tools",
+        "examples"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "wall_s": 0.6376639219997742
+    },
+    {
+      "check": "repository",
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "tools/check_repository.py"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "wall_s": 0.6838368920002722
+    },
+    {
+      "check": "doctor",
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "-m",
+        "agmina_runtime",
+        "doctor"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "wall_s": 0.7329409300000407
+    },
+    {
+      "check": "demo",
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "-m",
+        "agmina_runtime",
+        "demo",
+        "--out",
+        "<fresh-output>/demo"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "wall_s": 0.8739904580002076
+    },
+    {
+      "check": "replay",
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "-m",
+        "agmina_runtime",
+        "replay",
+        "--seed",
+        "7",
+        "--profile-error",
+        "--out",
+        "<fresh-output>/replay"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "wall_s": 0.6824952130000383
+    },
+    {
+      "check": "load",
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "-m",
+        "agmina_runtime",
+        "load",
+        "--config",
+        "configs/mock.json",
+        "--plan",
+        "examples/mock_load.json",
+        "--out",
+        "<fresh-output>/load"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "wall_s": 1.0831656619998284
+    },
+    {
+      "check": "loopback",
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "tools/loopback_smoke.py",
+        "--out",
+        "<fresh-output>/loopback"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "wall_s": 2.013059013000202
+    }
+  ],
+  "model_calls": 0,
+  "native_actions": 0,
+  "all_executed_checks_pass": true,
+  "ruff_passed": null,
+  "environment_versions": {
+    "httpx": "0.28.1",
+    "pydantic": "2.13.4",
+    "pytest": "9.0.2",
+    "pytest-asyncio": "1.3.0",
+    "fastapi": "0.128.2",
+    "uvicorn": "0.48.0",
+    "setuptools": "82.0.1"
+  },
+  "ruff": "unavailable; not run",
+  "external_paid_calls": 0
+}

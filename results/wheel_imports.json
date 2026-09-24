@@ -1,0 +1,24 @@
+{
+  "package_path": "<isolated-venv>/site-packages/agmina_runtime/__init__.py",
+  "modules": [
+    "agmina_runtime.adapters",
+    "agmina_runtime.adapters.hosts",
+    "agmina_runtime.backends",
+    "agmina_runtime.cache",
+    "agmina_runtime.cli",
+    "agmina_runtime.client",
+    "agmina_runtime.clocks",
+    "agmina_runtime.config",
+    "agmina_runtime.contracts",
+    "agmina_runtime.load",
+    "agmina_runtime.replay",
+    "agmina_runtime.runtime",
+    "agmina_runtime.scheduling",
+    "agmina_runtime.server",
+    "agmina_runtime.store",
+    "agmina_runtime.telemetry"
+  ],
+  "model_libraries_imported": false,
+  "source_checkout_used": false,
+  "dependencies": "reused existing /opt/pyvenv through explicit .pth; not a hermetic install"
+}

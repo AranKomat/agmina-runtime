@@ -1,0 +1,122 @@
+{
+  "edf": {
+    "by_workload": {
+      "mapping": {
+        "completed_in_time": 9,
+        "completed_late": 0,
+        "expired_before_dispatch": 4,
+        "offered": 13
+      },
+      "policy": {
+        "completed_in_time": 37,
+        "completed_late": 2,
+        "expired_before_dispatch": 45,
+        "offered": 84
+      },
+      "semantic": {
+        "completed_in_time": 27,
+        "completed_late": 0,
+        "expired_before_dispatch": 17,
+        "offered": 44
+      }
+    },
+    "completion_age_p95_ns": 1282000000,
+    "elapsed_virtual_ns": 5523000000,
+    "event_recall": null,
+    "gpu_speedup": null,
+    "kind": "discrete_event_replay",
+    "limits": [
+      "No feedback-dependent future request generation.",
+      "Service times are schedule-invariant; no dynamic batching/preemption model.",
+      "A met deadline is not a correct perception result or safe robot action.",
+      "All offered work retained, including expired requests."
+    ],
+    "offered": 141,
+    "physical_task_success": null,
+    "provenance": "Synthetic independent request arrivals; seed=7; not hardware measurements",
+    "queue_p95_ns": 1120000000,
+    "scheduler": "edf",
+    "synthetic": true,
+    "trace_fingerprint": "81f45257edbae03d35636a9e9ec1d5224907bd45b46c30abb26a6229ce80110e"
+  },
+  "fifo": {
+    "by_workload": {
+      "mapping": {
+        "completed_in_time": 13,
+        "completed_late": 0,
+        "expired_before_dispatch": 0,
+        "offered": 13
+      },
+      "policy": {
+        "completed_in_time": 2,
+        "completed_late": 0,
+        "expired_before_dispatch": 82,
+        "offered": 84
+      },
+      "semantic": {
+        "completed_in_time": 35,
+        "completed_late": 1,
+        "expired_before_dispatch": 8,
+        "offered": 44
+      }
+    },
+    "completion_age_p95_ns": 648000000,
+    "elapsed_virtual_ns": 5404000000,
+    "event_recall": null,
+    "gpu_speedup": null,
+    "kind": "discrete_event_replay",
+    "limits": [
+      "No feedback-dependent future request generation.",
+      "Service times are schedule-invariant; no dynamic batching/preemption model.",
+      "A met deadline is not a correct perception result or safe robot action.",
+      "All offered work retained, including expired requests."
+    ],
+    "offered": 141,
+    "physical_task_success": null,
+    "provenance": "Synthetic independent request arrivals; seed=7; not hardware measurements",
+    "queue_p95_ns": 497000000,
+    "scheduler": "fifo",
+    "synthetic": true,
+    "trace_fingerprint": "81f45257edbae03d35636a9e9ec1d5224907bd45b46c30abb26a6229ce80110e"
+  },
+  "slack": {
+    "by_workload": {
+      "mapping": {
+        "completed_in_time": 8,
+        "completed_late": 0,
+        "expired_before_dispatch": 5,
+        "offered": 13
+      },
+      "policy": {
+        "completed_in_time": 36,
+        "completed_late": 2,
+        "expired_before_dispatch": 46,
+        "offered": 84
+      },
+      "semantic": {
+        "completed_in_time": 29,
+        "completed_late": 0,
+        "expired_before_dispatch": 15,
+        "offered": 44
+      }
+    },
+    "completion_age_p95_ns": 1282000000,
+    "elapsed_virtual_ns": 5525000000,
+    "event_recall": null,
+    "gpu_speedup": null,
+    "kind": "discrete_event_replay",
+    "limits": [
+      "No feedback-dependent future request generation.",
+      "Service times are schedule-invariant; no dynamic batching/preemption model.",
+      "A met deadline is not a correct perception result or safe robot action.",
+      "All offered work retained, including expired requests."
+    ],
+    "offered": 141,
+    "physical_task_success": null,
+    "provenance": "Synthetic independent request arrivals; seed=7; not hardware measurements",
+    "queue_p95_ns": 1120000000,
+    "scheduler": "slack",
+    "synthetic": true,
+    "trace_fingerprint": "81f45257edbae03d35636a9e9ec1d5224907bd45b46c30abb26a6229ce80110e"
+  }
+}

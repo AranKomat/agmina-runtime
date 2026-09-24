@@ -1,0 +1,199 @@
+{
+  "kind": "paced_inference_load",
+  "clock_id": "clock-5e2506d3540b49dea60ddd322da9cfe6",
+  "offered": 12,
+  "states": {
+    "consumed": 12
+  },
+  "by_workload": {
+    "policy": {
+      "offered": 4,
+      "usable_completion": 4,
+      "consumed": 4
+    },
+    "semantic": {
+      "offered": 4,
+      "usable_completion": 4,
+      "consumed": 4
+    },
+    "mapping": {
+      "offered": 4,
+      "usable_completion": 4,
+      "consumed": 4
+    }
+  },
+  "timing": {
+    "queue": {
+      "n": 12,
+      "p50_ns": 107478583,
+      "p95_ns": 232359562,
+      "p99_ns": 232359562,
+      "max_ns": 232359562
+    },
+    "backend_roundtrip": {
+      "n": 12,
+      "p50_ns": 21056554,
+      "p95_ns": 21647593,
+      "p99_ns": 21647593,
+      "max_ns": 21647593
+    },
+    "first_content": {
+      "n": 12,
+      "p50_ns": 21036123,
+      "p95_ns": 21628194,
+      "p99_ns": 21628194,
+      "max_ns": 21628194
+    },
+    "submit_to_completion": {
+      "n": 12,
+      "p50_ns": 128966946,
+      "p95_ns": 252970806,
+      "p99_ns": 252970806,
+      "max_ns": 252970806
+    },
+    "observation_age_at_consumption": {
+      "n": 12,
+      "p50_ns": 132426402,
+      "p95_ns": 256370162,
+      "p99_ns": 256370162,
+      "max_ns": 256370162
+    }
+  },
+  "timing_groups": {
+    "workload:policy": {
+      "offered": 4,
+      "roundtrip_ns": {
+        "n": 4,
+        "p50": 20941461,
+        "p95": 21647593,
+        "p99": 21647593
+      },
+      "queue_ns": {
+        "n": 4,
+        "p50": 63496533,
+        "p95": 191539389,
+        "p99": 191539389
+      }
+    },
+    "endpoint:policy-worker": {
+      "offered": 4,
+      "roundtrip_ns": {
+        "n": 4,
+        "p50": 20941461,
+        "p95": 21647593,
+        "p99": 21647593
+      },
+      "queue_ns": {
+        "n": 4,
+        "p50": 63496533,
+        "p95": 191539389,
+        "p99": 191539389
+      }
+    },
+    "workload:semantic": {
+      "offered": 4,
+      "roundtrip_ns": {
+        "n": 4,
+        "p50": 21056554,
+        "p95": 21351558,
+        "p99": 21351558
+      },
+      "queue_ns": {
+        "n": 4,
+        "p50": 86195418,
+        "p95": 211715819,
+        "p99": 211715819
+      }
+    },
+    "endpoint:semantic-worker": {
+      "offered": 4,
+      "roundtrip_ns": {
+        "n": 4,
+        "p50": 21056554,
+        "p95": 21351558,
+        "p99": 21351558
+      },
+      "queue_ns": {
+        "n": 4,
+        "p50": 86195418,
+        "p95": 211715819,
+        "p99": 211715819
+      }
+    },
+    "workload:mapping": {
+      "offered": 4,
+      "roundtrip_ns": {
+        "n": 4,
+        "p50": 21047400,
+        "p95": 21488363,
+        "p99": 21488363
+      },
+      "queue_ns": {
+        "n": 4,
+        "p50": 107478583,
+        "p95": 232359562,
+        "p99": 232359562
+      }
+    },
+    "endpoint:mapping-worker": {
+      "offered": 4,
+      "roundtrip_ns": {
+        "n": 4,
+        "p50": 21047400,
+        "p95": 21488363,
+        "p99": 21488363
+      },
+      "queue_ns": {
+        "n": 4,
+        "p50": 107478583,
+        "p95": 232359562,
+        "p99": 232359562
+      }
+    }
+  },
+  "tokens": {
+    "known_totals": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cached_input_tokens": 0,
+      "reasoning_output_tokens": 0
+    },
+    "missing_attempt_counts": {
+      "input_tokens": 12,
+      "output_tokens": 12,
+      "cached_input_tokens": 12,
+      "reasoning_output_tokens": 12
+    },
+    "reasoning_is_subset_of_output": true
+  },
+  "cache_hits": 0,
+  "budget": {
+    "campaign": "synthetic-demo",
+    "max_attempts": 20,
+    "max_microusd": 0,
+    "attempts": 12,
+    "known_microusd": 0,
+    "held_microusd": 0,
+    "admission_total_microusd": 0,
+    "unknown_attempts": 0,
+    "over_ceiling": false,
+    "note": "Estimated inference admission only; GPU rental/energy and invoices are separate."
+  },
+  "quarantined_pools": [],
+  "gpu_seconds": null,
+  "device_energy_joules": null,
+  "physical_task_success": null,
+  "semantic_quality": null,
+  "notes": [
+    "Backend roundtrip includes unknown queue/network/compute/serialization components.",
+    "Do not infer GPU time from HTTP latency or infer task success from a consumed result.",
+    "All offered/rejected/expired work remains in the denominator.",
+    "First content is not a complete valid decision; nonstreamed calls have no TTFT metric.",
+    "Consumption age is measured at the coordinator, not after return-network delivery."
+  ],
+  "synthetic_inputs": true,
+  "provenance": "Synthetic timer workers; NOT SAM/VLA/GLM inference",
+  "source_decode_included": false,
+  "release_lag_max_ns": 1314899,
+  "source_clock_continues": true
+}

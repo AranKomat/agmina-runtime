@@ -1,0 +1,199 @@
+{
+  "budget": {
+    "admission_total_microusd": 0,
+    "attempts": 3,
+    "campaign": "synthetic-demo",
+    "held_microusd": 0,
+    "known_microusd": 0,
+    "max_attempts": 20,
+    "max_microusd": 0,
+    "note": "Estimated inference admission only; GPU rental/energy and invoices are separate.",
+    "over_ceiling": false,
+    "unknown_attempts": 0
+  },
+  "by_workload": {
+    "mapping": {
+      "consumed": 0,
+      "offered": 1,
+      "usable_completion": 1
+    },
+    "policy": {
+      "consumed": 1,
+      "offered": 1,
+      "usable_completion": 1
+    },
+    "semantic": {
+      "consumed": 0,
+      "offered": 1,
+      "usable_completion": 1
+    }
+  },
+  "cache_hits": 0,
+  "clock_id": "clock-0cd3f20bebde4225ae98757c27fb956d",
+  "device_energy_joules": null,
+  "gpu_seconds": null,
+  "kind": "coordinator_measurements",
+  "models_loaded": false,
+  "native_actions": 0,
+  "notes": [
+    "Backend roundtrip includes unknown queue/network/compute/serialization components.",
+    "Do not infer GPU time from HTTP latency or infer task success from a consumed result.",
+    "All offered/rejected/expired work remains in the denominator.",
+    "First content is not a complete valid decision; nonstreamed calls have no TTFT metric.",
+    "Consumption age is measured at the coordinator, not after return-network delivery."
+  ],
+  "offered": 3,
+  "paid_api_calls": 0,
+  "physical_task_success": null,
+  "quarantined_pools": [],
+  "semantic_quality": null,
+  "states": {
+    "consumed": 1,
+    "succeeded": 2
+  },
+  "synthetic": true,
+  "timing": {
+    "backend_roundtrip": {
+      "max_ns": 26877750,
+      "n": 3,
+      "p50_ns": 6388901,
+      "p95_ns": 26877750,
+      "p99_ns": 26877750
+    },
+    "first_content": {
+      "max_ns": 26854786,
+      "n": 3,
+      "p50_ns": 6362070,
+      "p95_ns": 26854786,
+      "p99_ns": 26854786
+    },
+    "observation_age_at_consumption": {
+      "max_ns": 39477364,
+      "n": 1,
+      "p50_ns": 39477364,
+      "p95_ns": 39477364,
+      "p99_ns": 39477364
+    },
+    "queue": {
+      "max_ns": 30931558,
+      "n": 3,
+      "p50_ns": 27986178,
+      "p95_ns": 30931558,
+      "p99_ns": 30931558
+    },
+    "submit_to_completion": {
+      "max_ns": 37320459,
+      "n": 3,
+      "p50_ns": 30969676,
+      "p95_ns": 37320459,
+      "p99_ns": 37320459
+    }
+  },
+  "timing_groups": {
+    "endpoint:mapping-worker": {
+      "offered": 1,
+      "queue_ns": {
+        "n": 1,
+        "p50": 455826,
+        "p95": 455826,
+        "p99": 455826
+      },
+      "roundtrip_ns": {
+        "n": 1,
+        "p50": 26877750,
+        "p95": 26877750,
+        "p99": 26877750
+      }
+    },
+    "endpoint:policy-worker": {
+      "offered": 1,
+      "queue_ns": {
+        "n": 1,
+        "p50": 27986178,
+        "p95": 27986178,
+        "p99": 27986178
+      },
+      "roundtrip_ns": {
+        "n": 1,
+        "p50": 2983498,
+        "p95": 2983498,
+        "p99": 2983498
+      }
+    },
+    "endpoint:semantic-worker": {
+      "offered": 1,
+      "queue_ns": {
+        "n": 1,
+        "p50": 30931558,
+        "p95": 30931558,
+        "p99": 30931558
+      },
+      "roundtrip_ns": {
+        "n": 1,
+        "p50": 6388901,
+        "p95": 6388901,
+        "p99": 6388901
+      }
+    },
+    "workload:mapping": {
+      "offered": 1,
+      "queue_ns": {
+        "n": 1,
+        "p50": 455826,
+        "p95": 455826,
+        "p99": 455826
+      },
+      "roundtrip_ns": {
+        "n": 1,
+        "p50": 26877750,
+        "p95": 26877750,
+        "p99": 26877750
+      }
+    },
+    "workload:policy": {
+      "offered": 1,
+      "queue_ns": {
+        "n": 1,
+        "p50": 27986178,
+        "p95": 27986178,
+        "p99": 27986178
+      },
+      "roundtrip_ns": {
+        "n": 1,
+        "p50": 2983498,
+        "p95": 2983498,
+        "p99": 2983498
+      }
+    },
+    "workload:semantic": {
+      "offered": 1,
+      "queue_ns": {
+        "n": 1,
+        "p50": 30931558,
+        "p95": 30931558,
+        "p99": 30931558
+      },
+      "roundtrip_ns": {
+        "n": 1,
+        "p50": 6388901,
+        "p95": 6388901,
+        "p99": 6388901
+      }
+    }
+  },
+  "tokens": {
+    "known_totals": {
+      "cached_input_tokens": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "reasoning_output_tokens": 0
+    },
+    "missing_attempt_counts": {
+      "cached_input_tokens": 3,
+      "input_tokens": 3,
+      "output_tokens": 3,
+      "reasoning_output_tokens": 3
+    },
+    "reasoning_is_subset_of_output": true
+  }
+}

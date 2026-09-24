@@ -1,0 +1,66 @@
+{
+  "provenance": "Own generated PNG; inference transport/load only, no visual quality benchmark",
+  "synthetic_inputs": true,
+  "jobs": [
+    {
+      "id": "camera-0",
+      "session": "camera-0",
+      "model": "vision",
+      "workload": "semantic",
+      "release_ms": 0,
+      "deadline_after_ms": 30000,
+      "profile_capture_lag_ms": 0,
+      "result_kind": "historical",
+      "max_age_ms": null,
+      "evidence_hashes": [
+        "aa204dae87be8f3b3814c9c6db47b417bb2a278dd9f715e20f007f81273f3f28"
+      ],
+      "payload_json": "{\"messages\":[{\"content\":\"Return one small JSON object describing the visible shape. This is a synthetic transport probe.\",\"role\":\"system\"},{\"content\":[{\"text\":\"Describe the colored shape.\",\"type\":\"text\"},{\"image_url\":{\"url\":\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAIAAABvFaqvAAAAJ0lEQVR4nGP4SiXAMGrQgBp0R0SEIBo1aNSgUYMoN4g8MGoQHQ0CADIuatxcd5mtAAAAAElFTkSuQmCC\"},\"type\":\"image_url\"}],\"role\":\"user\"}],\"response_format\":{\"type\":\"json_object\"}}"
+    },
+    {
+      "id": "camera-1",
+      "session": "camera-1",
+      "model": "vision",
+      "workload": "semantic",
+      "release_ms": 1000,
+      "deadline_after_ms": 30000,
+      "profile_capture_lag_ms": 0,
+      "result_kind": "historical",
+      "max_age_ms": null,
+      "evidence_hashes": [
+        "aa204dae87be8f3b3814c9c6db47b417bb2a278dd9f715e20f007f81273f3f28"
+      ],
+      "payload_json": "{\"messages\":[{\"content\":\"Return one small JSON object describing the visible shape. This is a synthetic transport probe.\",\"role\":\"system\"},{\"content\":[{\"text\":\"Describe the colored shape.\",\"type\":\"text\"},{\"image_url\":{\"url\":\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAIAAABvFaqvAAAAJ0lEQVR4nGP4SiXAMGrQgBp0R0SEIBo1aNSgUYMoN4g8MGoQHQ0CADIuatxcd5mtAAAAAElFTkSuQmCC\"},\"type\":\"image_url\"}],\"role\":\"user\"}],\"response_format\":{\"type\":\"json_object\"}}"
+    },
+    {
+      "id": "camera-2",
+      "session": "camera-0",
+      "model": "vision",
+      "workload": "semantic",
+      "release_ms": 2000,
+      "deadline_after_ms": 30000,
+      "profile_capture_lag_ms": 0,
+      "result_kind": "historical",
+      "max_age_ms": null,
+      "evidence_hashes": [
+        "aa204dae87be8f3b3814c9c6db47b417bb2a278dd9f715e20f007f81273f3f28"
+      ],
+      "payload_json": "{\"messages\":[{\"content\":\"Return one small JSON object describing the visible shape. This is a synthetic transport probe.\",\"role\":\"system\"},{\"content\":[{\"text\":\"Describe the colored shape.\",\"type\":\"text\"},{\"image_url\":{\"url\":\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAIAAABvFaqvAAAAJ0lEQVR4nGP4SiXAMGrQgBp0R0SEIBo1aNSgUYMoN4g8MGoQHQ0CADIuatxcd5mtAAAAAElFTkSuQmCC\"},\"type\":\"image_url\"}],\"role\":\"user\"}],\"response_format\":{\"type\":\"json_object\"}}"
+    },
+    {
+      "id": "camera-3",
+      "session": "camera-1",
+      "model": "vision",
+      "workload": "semantic",
+      "release_ms": 3000,
+      "deadline_after_ms": 30000,
+      "profile_capture_lag_ms": 0,
+      "result_kind": "historical",
+      "max_age_ms": null,
+      "evidence_hashes": [
+        "aa204dae87be8f3b3814c9c6db47b417bb2a278dd9f715e20f007f81273f3f28"
+      ],
+      "payload_json": "{\"messages\":[{\"content\":\"Return one small JSON object describing the visible shape. This is a synthetic transport probe.\",\"role\":\"system\"},{\"content\":[{\"text\":\"Describe the colored shape.\",\"type\":\"text\"},{\"image_url\":{\"url\":\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAIAAABvFaqvAAAAJ0lEQVR4nGP4SiXAMGrQgBp0R0SEIBo1aNSgUYMoN4g8MGoQHQ0CADIuatxcd5mtAAAAAElFTkSuQmCC\"},\"type\":\"image_url\"}],\"role\":\"user\"}],\"response_format\":{\"type\":\"json_object\"}}"
+    }
+  ]
+}
