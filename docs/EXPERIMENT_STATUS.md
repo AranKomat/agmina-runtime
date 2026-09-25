@@ -19,7 +19,7 @@ hardware, or physical-task result.
 | R3 | **Pending** | Run paced 1/2/4/8-session load against the selected real endpoint. |
 | R4 | **Partial: synthetic only** | Deterministic scheduler replay and mock contention pass; real endpoint placement/cancellation study remains. |
 | R5 | **Partial: development baseline only** | Retained and visual-QA provenance audits pass, and a prior GLM/Gemini status baseline is recorded; the data is not held out, so no quality claim. |
-| R6 | **Pending** | Qualify a compatible stateless policy/simulator loop; preserve native action and safety gates. |
+| R6 | **Partial: retained no-action replay** | A native RoboLab policy recording round-trips through Agmina with exact action tensors and no actuation; live stateless offload and closed-loop outcomes remain unqualified. |
 | R7 | **Pending** | Compare one additional compute/site class with model and precision differences disclosed. |
 | R8 | **Pending** | Run one design-partner pilot and repeat the same protocol with a second partner. |
 
@@ -185,8 +185,8 @@ untouched held-out split, then freeze the event/latency protocol before model co
 
 ### R6 — Policy/Simulator Closed Loop
 
-- [ ] Choose a compatible policy/simulator recipe with a native observation/action codec.
-- [ ] Replay recorded policy inputs with no actions first.
+- [x] Select and document a retained native policy/simulator recipe and its observation/action codec.
+- [x] Replay recorded policy inputs with no actions first: `runs/r6-recorded-001`.
 - [ ] Compare direct server and Agmina paths under the identical recipe.
 - [ ] Keep local control, emergency behavior, action admission, verification, and recovery in the
   application host.
@@ -197,6 +197,21 @@ untouched held-out split, then freeze the event/latency protocol before model co
 
 **Gate:** native gates and closed-loop outcome evidence pass. A timer fixture or open-loop replay is
 not sufficient.
+
+The retained RoboLab `BananaInBowlTask` recording contains five native policy queries from one
+successful source episode. The no-action replay `runs/r6-recorded-001` verified each retained NPZ
+hash, the `540x640x3` UINT8 image, `7`-element FP32 joint state, `1`-element FP32 gripper state,
+and `32x8` FP32 joint-position action chunk; all five action payloads round-tripped exactly through
+the Agmina action-proposal contract. The host consumed them only as shadow evidence and recorded
+`action_authorized=false` for every query; the campaign used zero model, network, GPU, and native
+action calls. The source receipt reports a successful episode and native timing, but that is source
+evidence rather than a result of this replay.
+
+This does not qualify live offload: the retained receipt lacks an exact checkpoint/server revision,
+capture timestamps, and the reset/sequence semantics required by its session-ID contract. The next
+R6 gate is therefore a direct-versus-Agmina comparison using the same native policy recipe, followed
+by a separately authorized closed-loop run with local action admission and independent outcome
+verification.
 
 ### R7 — Heterogeneous Compute
 
