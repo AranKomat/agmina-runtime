@@ -17,7 +17,7 @@ hardware, or physical-task result.
 | R1 | **Partial: retained read-only integration** | Fresh two-parent fault matrix, retained lineage comparison, and clock-reset/generation fences pass; explicit parent task/episode identity fields remain absent in StreamBudget. |
 | R2 | **Partial: real direct/Agmina transport pair** | One corrected GLM packet completed directly and through Agmina with identical request hashes and usable outputs; provider revision and charge reconciliation remain open. |
 | R3 | **Partial: real 1/2/4/8-session load complete** | 1/2 sessions completed all offered jobs; 4/8 sessions hit the declared freshness boundary. Repeat with a declared capacity target only if needed. |
-| R4 | **Partial: first real scheduler observation** | The first real FIFO/EDF/least-slack matrix completed with full accounting; provider revision, replication, and broader placement/cancellation conditions remain. |
+| R4 | **Partial: scheduler plus bounded cache/latest observations** | Scheduler matrices and one matched latest-only baseline completed with full accounting; provider revision, placement, real-link fault injection, and broader replication remain. |
 | R5 | **Partial: real GLM replay transport incomplete** | Six-case development scoring passed, but the full two-video replay failed on one provider transport path; labels and charges remain unresolved, so this is not a qualified benchmark result. |
 | R6 | **Partial: retained replay + native RPC contract** | A native RoboLab policy recording round-trips through Agmina, and the inspected reset/infer boundary now has a local proposal-only adapter test; live direct-vs-Agmina timing and closed-loop outcomes remain unqualified. |
 | R7 | **Pending** | Compare one additional compute/site class with model and precision differences disclosed. |
@@ -187,6 +187,26 @@ evidence that any particular provider actually served a request.
 - [x] Run the first bounded real-endpoint scheduler matrix with the retained plan and evaluate all
   three conditions; see `runs/r4-endpoint-matrix-20260926-002` and
   `tools/r4_evaluate_endpoint_matrix.py`.
+- [x] Expose cache/latest-only load-plan controls with stable evidence IDs and reject unsafe policy
+  combinations; retained smoke `runs/r4-ablation-controls-mock-20260926-002` records one cache hit
+  and one queued latest-only request superseded by its newer snapshot. The equal-snapshot negative
+  control is retained in `runs/r4-ablation-controls-mock-20260926-001`.
+- [x] Run a separately capped real cache/latest-only probe with the retained source packet and no
+  retries; see `runs/r4-ablation-real-20260926-001-*` and corrected cache run
+  `runs/r4-ablation-real-20260926-002-cache`. The corrected cache condition consumed both jobs with
+  one cache hit, 55 micro-USD known usage, zero unknown holds, and no quarantine. The first cache
+  configuration negative control and latest-only probe are retained rather than retried.
+- [x] Re-run latest-only with an explicit 60-second deadline that leaves room for the declared
+  endpoint estimate; `runs/r4-ablation-real-20260926-003-latest` consumed the blocker and newer
+  request, superseded the older queued request, used 151 micro-USD with zero unknown attempts, and
+  did not quarantine the pool.
+- [x] Run the matched no-replacement baseline with the same retained packet and 60-second deadline;
+  `runs/r4-ablation-real-20260926-004-baseline` consumed all 3 jobs with 204 micro-USD known usage.
+  Against the latest-only condition this is one fewer consumed request and 53 micro-USD lower
+  observed usage, but provider revision and semantic equivalence remain unqualified.
+- [x] Run zero-cost injected-delay and unconfirmed-loss controls; see
+  `runs/r4-injected-conditions-mock-20260926-001`. Delayed work consumed 4/4; the loss remained
+  unknown and quarantined the mock pool as required.
 - [ ] Replicate and qualify on the real endpoint while holding model, precision, source data, server
   batching, pool capacity, and deadline semantics fixed, with the served provider revision pinned.
 - [ ] Compare scheduler-only, cache-only, latest-only, placement-only, and joint variants.
@@ -216,6 +236,35 @@ with 1,842 micro-USD of provider-reported usage in total. Together with the reta
 one/two-session cohorts and the s4 matrix, this gives a first load curve from unloaded through
 overloaded conditions. It does not isolate injected loss, placement, cache/latest-only behavior, or
 served-provider revision, so R4 remains partial.
+
+The small real ablation probe is not a quality result. The corrected cache condition used one paid
+model request and served the duplicate from the exact historical cache (`1` hit, `55` micro-USD,
+zero unknown attempts). The earlier cache configuration had `cache_bytes=0` and is retained as a
+negative control. The latest-only condition superseded the queued older request, but its newer
+replacement was not dispatched because the conservative 19-second endpoint estimate no longer fit
+inside the remaining 20-second deadline after the blocker; it expired with no second paid attempt.
+This identifies a deadline/admission interaction, not a scheduler or provider-quality win.
+
+The matched latest-only condition with a declared 60-second deadline then consumed both the blocker
+and newer request, superseded the older queued request, and recorded 151 micro-USD of known usage
+with zero unknown attempts or quarantine. This validates the latest-only state transition and
+deadline choice for this endpoint, not a general scheduler improvement. The zero-cost delay/loss
+control separately confirms that an unconfirmed loss becomes an unknown attempt and quarantines its
+pool; it is not evidence about a real network link.
+
+The matched no-replacement baseline used the same three jobs, source packet, endpoint, and 60-second
+deadline. It consumed all three jobs for 204 micro-USD known usage. Latest-only consumed the blocker
+and newer request while superseding the older queued request, for 151 micro-USD. The resulting 53
+micro-USD difference is a bounded request-suppression observation; it is not a model-quality or
+general cost claim, especially while the served provider revision remains unpinned.
+
+The load driver now passes explicit `cacheable`, `replace_key`, `discardable`, `operation`, and
+optional stable `observation_ids` fields into `Job`. The retained zero-cost smoke confirms that two
+same-snapshot historical queries over identical retained evidence produce one cache hit, and that a
+queued older latest-only request is superseded by a newer snapshot. The equal-snapshot case is kept
+as a negative control because the runtime rejects ambiguous ordering. Policy caching/discarding and
+unstable observation-ID reuse are rejected. This qualifies local ablation plumbing only; no real
+cache/latest-only endpoint condition has been run yet.
 
 ### R5 — StreamBudget Quality And Cost
 

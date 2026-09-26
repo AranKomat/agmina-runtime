@@ -91,6 +91,27 @@ second video, so it is not a quality result.
   cohort. FIFO consumed 10/32, EDF 11/32, and least-slack 9/32, with `1,842` micro-USD known usage
   and no unknown holds or quarantine. This extends the real load curve but does not qualify placement,
   cache/latest-only, injected-loss, or provider-revision effects.
+- **R4 ablation plumbing:** the paced load plan now passes explicit cache/latest-only controls and
+  optional stable evidence IDs into runtime jobs. Retained mock smoke `...-002` produced one cache
+  hit and superseded one queued older latest-only request when a newer snapshot arrived; `...-001`
+  retains the equal-snapshot negative control. Policy caching/discarding and unstable evidence
+  identity reuse are rejected. This is software/fixture evidence only; the bounded real probe is
+  recorded separately below.
+- **R4 bounded real ablation:** the corrected cache condition consumed both same-evidence jobs with
+  one exact historical cache hit and `55` micro-USD known usage, with zero unknown attempts or
+  quarantine. The retained first cache run had `cache_bytes=0` and is a configuration negative
+  control. The latest-only probe superseded its queued older request, but the newer replacement
+  expired because the conservative 19-second endpoint estimate did not fit the remaining 20-second
+  deadline after the blocker. This is an admission/deadline observation, not a quality result.
+- **R4 latest-only deadline correction:** a separately labeled 60-second condition consumed the
+  blocker and newer request, superseded the older queued request, and recorded `151` micro-USD of
+  known usage with zero unknown attempts or quarantine. The zero-cost injected-delay/loss control
+  consumed all delayed jobs and quarantined the mock pool after an unconfirmed loss. These are
+  coordinator/accounting results, not quality or real-link results.
+- **R4 matched latest-only baseline:** the same three-job trace with replacement disabled consumed
+  all 3 jobs for `204` micro-USD, while latest-only consumed 2 and superseded 1 for `151` micro-USD.
+  The observed difference is `53` micro-USD and one avoided request under this trace only; provider
+  revision and semantic equivalence remain unqualified.
 
 ## Current Runtime Contract
 
@@ -106,9 +127,11 @@ second video, so it is not a quality result.
    importer to reconcile the 2,091 real GLM attempt holds before any quality or cost claim.
 2. Reconcile the provider-side transport failure and remaining unknown attempt holds; no new
    paid full replay is justified until that is done.
-3. Pin the served provider revision and run the remaining bounded R4 placement/cache/latest-only
-   and injected-delay/loss variants, then run the fixed-rate, tuned-detector/motion-refresh, and
-   StreamBudget adaptive baselines under the same held-out protocol.
+3. Pin the served provider revision and run a matched scheduler-only baseline using the same 60-second
+   deadline, then qualify placement when a second real endpoint path is available. Keep the cache and
+   latest-only results as bounded observations, not general cost claims; use an isolated real proxy for
+   delay/loss before comparing it with the zero-cost control, then run the fixed-rate,
+   tuned-detector/motion-refresh, and StreamBudget adaptive baselines under the same held-out protocol.
 4. Keep R6 live policy, R7, and R8 downstream of the R5 quality gate.
 
 ## Verification

@@ -41,6 +41,10 @@ class MockBackend:
         if isinstance(delay, bool) or not isinstance(delay, (int, float)) or not 0 <= delay <= 10:
             raise BackendFailure("invalid_fixture_delay", termination_known=True)
         await asyncio.sleep(delay)
+        if p.get("fixture_unknown"):
+            # Deterministic stand-in for a transport loss whose remote
+            # termination cannot be confirmed. The runtime must quarantine.
+            raise BackendFailure("injected_transport_loss")
         if p.get("fixture_error"):
             raise BackendFailure("injected_failure", termination_known=True)
         return Prediction(payload_json=canonical(p.get("fixture_output", {"fixture": True, "job": job.id})),

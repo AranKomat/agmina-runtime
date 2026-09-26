@@ -40,3 +40,27 @@ the same declared endpoint and have complete accounting. It does not establish a
 winner. Follow-up load levels should reuse the same source/model and separately compare unloaded,
 near-capacity, overloaded, bursty, and injected-delay/loss conditions. Cache, latest-only, placement,
 and joint variants are separate ablations and must not be mixed into the scheduler-only result.
+
+## Load-plan controls for isolated ablations
+
+`LoadItem` exposes the runtime controls needed for those variants without changing the
+application-facing `Job` contract:
+
+- `cacheable: true` is permitted only for historical, non-policy work.
+- `replace_key` requires `discardable: true`; replacement remains scoped to the same session,
+  task revision, model, and operation.
+- `observation_ids` is optional. Use it only when two jobs intentionally refer to the exact same
+  retained evidence. Hashes, capture time, availability time, and source session still enter the
+  cache key, so changing any of them must produce a miss.
+- `operation` defaults to `paced_load` and can separate ablation families without changing the
+  scheduler trace.
+
+The controls are rejected for policy jobs so a load-plan cache/latest-only experiment cannot
+silently drop a control action. A real cache comparison must first pass the corresponding mock
+test, use duplicate historical queries with stable evidence IDs, and keep source evidence unchanged.
+
+The first real latest-only probe used the source plan's 20-second deadline and correctly exposed
+that the endpoint's conservative 19-second estimate left no feasible successor after a blocker.
+The matched follow-up explicitly used a 60-second deadline and recorded the changed deadline in its
+preparation manifest. This is the required pattern for interpreting the latest-only result; do not
+silently widen deadlines inside a scheduler comparison.

@@ -28,6 +28,13 @@ class LoadItem(Contract):
     result_kind: ResultKind = ResultKind.HISTORICAL
     max_age_ms: int | None = Field(default=None, gt=0, le=300000)
     evidence_hashes: tuple[Sha, ...] = Field(min_length=1, max_length=32)
+    # Stable IDs are only for an intentional duplicate historical query. The
+    # evidence hashes and mapped times still remain part of the runtime key.
+    observation_ids: tuple[Name, ...] | None = None
+    operation: Name = "paced_load"
+    replace_key: Name | None = None
+    discardable: bool = False
+    cacheable: bool = False
     payload_json: str
     @model_validator(mode="after")
     def current_bound(self):
@@ -35,6 +42,17 @@ class LoadItem(Contract):
         strict_json(self.payload_json)
         if self.result_kind != ResultKind.HISTORICAL and self.max_age_ms is None:
             raise ValueError("Current load jobs require an age limit")
+        if self.observation_ids is not None:
+            if len(self.observation_ids) != len(self.evidence_hashes):
+                raise ValueError("observation_ids must match evidence_hashes length")
+            if len(set(self.observation_ids)) != len(self.observation_ids):
+                raise ValueError("observation_ids must be unique")
+        if self.replace_key and not self.discardable:
+            raise ValueError("replace_key requires discardable=true")
+        if self.workload == "policy" and (self.discardable or self.cacheable):
+            raise ValueError("Policy load items cannot be implicitly dropped or cached")
+        if self.cacheable and self.result_kind != ResultKind.HISTORICAL:
+            raise ValueError("Only historical load items may be cached")
         return self
 
 
@@ -79,15 +97,17 @@ async def run_load(config: RuntimeConfig, plan: LoadPlan, out: Path, *, allow_ne
             release_lags.append(now-release)
             session=sessions[item.session]
             capture=max(0,release-item.profile_capture_lag_ms*1_000_000)
-            observations=tuple(Observation(id=f"{item.id}-o{k}",source=item.session,sequence=k,
+            observations=tuple(Observation(id=(item.observation_ids[k] if item.observation_ids
+                                               else f"{item.id}-o{k}"),source=item.session,sequence=k,
                 sha256=h,capture_ns=capture,available_ns=release,source_time="load-replay")
                 for k,h in enumerate(item.evidence_hashes))
             job=Job(id=item.id,tenant=config.tenant,session_id=session.id,epoch=session.epoch,
                 task_revision=session.task_revision,clock_id=session.clock_id,model=item.model,
-                operation="paced_load",workload=item.workload,result_kind=item.result_kind,
+                operation=item.operation,workload=item.workload,result_kind=item.result_kind,
                 observations=observations,snapshot_ns=release,deadline_ns=release+item.deadline_after_ms*1_000_000,
                 max_age_ns=item.max_age_ms*1_000_000 if item.max_age_ms else None,
-                payload_json=item.payload_json)
+                payload_json=item.payload_json,replace_key=item.replace_key,
+                discardable=item.discardable,cacheable=item.cacheable)
             runtime.submit(job)
             collectors.append(asyncio.create_task(collect(job.id,job.deadline_ns)))
         await asyncio.gather(*collectors)

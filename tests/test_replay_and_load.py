@@ -2,6 +2,7 @@ import json
 
 import pytest
 
+from agmina_runtime.contracts import ResultKind
 from agmina_runtime.load import LoadItem, LoadPlan, run_load
 from agmina_runtime.replay import ReplayRequest, Trace, replay, synthetic_trace
 from agmina_runtime.scheduling import Candidate, rank
@@ -68,3 +69,39 @@ async def test_load_clock_continues(tmp_path,cfg):
     assert report["states"]["consumed"]==4
     with pytest.raises(FileExistsError):
         await run_load(cfg,plan,out)
+
+
+async def test_load_historical_cache_control_reuses_stable_evidence(tmp_path, cfg):
+    cached_cfg = cfg.model_copy(update={"cache_entries": 8})
+    items = tuple(LoadItem(
+        id=job_id, session="video", model="model", workload="semantic", release_ms=release_ms,
+        deadline_after_ms=1000, result_kind=ResultKind.HISTORICAL, evidence_hashes=("0" * 64,),
+        observation_ids=("camera-frame-0",), cacheable=True,
+        payload_json='{"fixture_delay_s":0.001}')
+        for job_id, release_ms in (("first", 0), ("duplicate", 0)))
+    plan = LoadPlan(provenance="historical cache ablation", synthetic_inputs=True, jobs=items)
+    report = await run_load(cached_cfg, plan, tmp_path / "cache")
+    assert report["states"]["consumed"] == 2
+    assert report["cache_hits"] == 1
+
+
+def test_load_rejects_unsafe_ablation_controls():
+    common = dict(id="job", session="video", model="model", workload="semantic", release_ms=0,
+                  deadline_after_ms=1000, evidence_hashes=("0" * 64,), payload_json="{}")
+    with pytest.raises(ValueError, match="replace_key"):
+        LoadItem(**common, replace_key="latest")
+    with pytest.raises(ValueError, match="Policy"):
+        LoadItem(**{**common, "workload": "policy"}, discardable=True)
+    with pytest.raises(ValueError, match="observation_ids"):
+        LoadItem(**common, observation_ids=("a", "b"))
+
+
+async def test_load_injected_transport_loss_quarantines_mock_pool(tmp_path, cfg):
+    item = LoadItem(id="loss", session="video", model="model", workload="semantic", release_ms=0,
+                    deadline_after_ms=1000, evidence_hashes=("0" * 64,),
+                    payload_json='{"fixture_unknown":true}')
+    plan = LoadPlan(provenance="injected transport-loss control", synthetic_inputs=True, jobs=(item,))
+    report = await run_load(cfg, plan, tmp_path / "loss")
+    assert report["states"] == {"unknown": 1}
+    assert report["budget"]["unknown_attempts"] == 1
+    assert report["quarantined_pools"] == ["gpu"]
