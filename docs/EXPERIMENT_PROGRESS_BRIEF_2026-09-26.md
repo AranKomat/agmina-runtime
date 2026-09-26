@@ -87,6 +87,10 @@ second video, so it is not a quality result.
   EDF 16/16, and least-slack 15/16. All charges were known (`2,555` micro-USD total), with no
   unknown holds or pool quarantine. The served provider revision was not pinned, so this remains
   transport/capacity evidence rather than a scheduler or quality conclusion.
+- **R4 overloaded replication:** the same three schedulers ran on the retained 32-job/eight-session
+  cohort. FIFO consumed 10/32, EDF 11/32, and least-slack 9/32, with `1,842` micro-USD known usage
+  and no unknown holds or quarantine. This extends the real load curve but does not qualify placement,
+  cache/latest-only, injected-loss, or provider-revision effects.
 
 ## Current Runtime Contract
 

@@ -210,6 +210,13 @@ quarantine; provider-reported usage summed to 2,555 micro-USD. This is a bounded
 observation only. The served provider revision was not pinned, and the cohort is too small to select
 a scheduler or claim a general endpoint improvement.
 
+The matched overloaded `s8` matrix used 32 offered jobs across eight sessions. FIFO consumed 10/32,
+EDF 11/32, and least-slack 9/32; all three reports had complete accounting and no pool quarantine,
+with 1,842 micro-USD of provider-reported usage in total. Together with the retained real R3
+one/two-session cohorts and the s4 matrix, this gives a first load curve from unloaded through
+overloaded conditions. It does not isolate injected loss, placement, cache/latest-only behavior, or
+served-provider revision, so R4 remains partial.
+
 ### R5 — StreamBudget Quality And Cost
 
 - [x] Audit the retained six-frame campaign's receipt, frame hashes, timestamps, and video identities.
