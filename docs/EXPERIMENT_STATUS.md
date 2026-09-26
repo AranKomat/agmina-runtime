@@ -181,6 +181,9 @@ evidence that any particular provider actually served a request.
 
 - [x] Run deterministic FIFO/EDF/least-slack replay on a shared synthetic trace.
 - [x] Exercise synthetic profile error, blocking background work, expiry, and pool recovery.
+- [x] Freeze the first real-endpoint scheduler matrix and generate its no-dispatch manifest from the
+  retained `s4` plan; see `docs/R4_ENDPOINT_PROTOCOL.md` and
+  `tools/r4_prepare_endpoint_matrix.py`.
 - [ ] Repeat on the real endpoint while holding model, precision, source data, server batching,
   pool capacity, and deadline semantics fixed.
 - [ ] Compare scheduler-only, cache-only, latest-only, placement-only, and joint variants.

@@ -80,6 +80,10 @@ second video, so it is not a quality result.
   job-level provider charges. It validates a complete batch before an atomic apply and rejects
   duplicate, unknown, or already-settled jobs. A copied two-attempt ledger fixture passed; the
   historical campaign remains untouched because no per-attempt provider export is available.
+- **R4 matrix preparation:** a no-dispatch manifest now freezes the first real scheduler comparison
+  over the retained 16-job/four-session `s4` cohort, holding endpoint, pool capacity, source data,
+  deadlines, and provider routing constant across FIFO, EDF, and least-slack. It has not been run
+  because the configured provider credential is absent.
 
 ## Current Runtime Contract
 
@@ -95,7 +99,8 @@ second video, so it is not a quality result.
    importer to reconcile the 2,091 real GLM attempt holds before any quality or cost claim.
 2. Reconcile the provider-side transport failure and remaining unknown attempt holds; no new
    paid full replay is justified until that is done.
-3. Only after transport is stable, run the fixed-rate, tuned-detector/motion-refresh, and
+3. Dispatch the prepared bounded R4 scheduler matrix once a provider credential is available, then
+   run the fixed-rate, tuned-detector/motion-refresh, and
    StreamBudget adaptive baselines under the same held-out protocol.
 4. Keep R6 live policy, R7, and R8 downstream of the R5 quality gate.
 
