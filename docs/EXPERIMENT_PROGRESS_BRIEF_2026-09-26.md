@@ -109,6 +109,9 @@ second video, so it is not a quality result.
   pinned scheduler or quality result. The preceding proxy implementation failure is retained
   separately with three unresolved estimated holds (`6,000` micro-USD) because it did not log the
   upstream generation IDs; those attempts are excluded from the corrected totals.
+- **R4 provider pin control:** one direct request with `provider.only=["together"]` consumed for
+  `48` micro-USD and, after a short metadata propagation delay, was confirmed as Together serving
+  `z-ai/glm-5.3-flash-20260826`. This is a routing-control check, not a scheduler or quality result.
 - **R4 ablation plumbing:** the paced load plan now passes explicit cache/latest-only controls and
   optional stable evidence IDs into runtime jobs. Retained mock smoke `...-002` produced one cache
   hit and superseded one queued older latest-only request when a newer snapshot arrived; `...-001`

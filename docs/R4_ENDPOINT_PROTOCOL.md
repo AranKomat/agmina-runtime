@@ -44,6 +44,11 @@ provider's dated revision suffix, such as `z-ai/glm-5.3-flash` and
 `z-ai/glm-5.3-flash-20260826`. This is identity/accounting evidence only; it is not semantic-quality
 evidence and does not reconcile invoices by itself.
 
+When a comparison requires one provider rather than a preference order, include the provider's
+explicit `only` constraint in the request routing body and verify it from generation metadata. An
+`order` list with fallbacks disabled is still recorded as a preference configuration; it is not
+treated as pinned unless the retained metadata proves one provider for every dispatched attempt.
+
 The localhost-only `tools/r4_real_proxy.py` is the controlled real-link fault tool. It forwards the
 operator's exact request to the declared upstream, adds a fixed response delay or drops a bounded
 number of responses after upstream completion, and writes request/provider-generation records to a

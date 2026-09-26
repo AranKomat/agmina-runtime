@@ -228,6 +228,13 @@ evidence that any particular provider actually served a request.
   `95` micro-USD with zero remaining unknown attempts. The first proxy implementation failure is
   retained separately as negative evidence and is not included in these totals; its three attempts
   remain explicit unknown holds because that buggy proxy did not retain provider generation IDs.
+- [x] Verify the provider-pinning control with one direct request using
+  `provider.only=["together"]`; `runs/r4-provider-pin-probe-20260926-001` consumed one request
+  for `48` micro-USD, and the delayed metadata audit
+  `runs/r4-provider-generation-audit-20260926-provider-pin-002` confirmed Together serving
+  `z-ai/glm-5.3-flash-20260826`. The first immediate metadata query returned 404 and was retained;
+  the later recheck succeeded, so future campaign audits should allow propagation before judging
+  a generation record missing.
 - [ ] Replicate and qualify on the real endpoint while holding model, precision, source data, server
   batching, pool capacity, and deadline semantics fixed, with the served provider revision pinned
   in every dispatched attempt.
