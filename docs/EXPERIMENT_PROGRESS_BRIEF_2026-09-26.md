@@ -19,7 +19,7 @@ second video, so it is not a quality result.
 | R1 application bridges | Partial | StreamBudget and Physical Harness read-only bridges, lineage, fault and clock fences pass; parent task/episode identity is still absent upstream. |
 | R2 real endpoint | Partial | Direct vs Agmina GLM packet had identical request hash and usable outputs; provider/cost reconciliation remains open. |
 | R3 paced load | Partial | Real 1/2/4/8-session cohort completed; 1/2 clean, 4/8 freshness-limited. |
-| R4 scheduling | Partial, bounded real observations | FIFO/EDF/least-slack ran on retained unloaded, overloaded, bursty, and provider-pinned proxy-fault conditions with accounting; one joint cache/latest-only control passed, while placement and broader replication remain. |
+| R4 scheduling | Partial, bounded real observations | FIFO/EDF/least-slack ran on retained unloaded, overloaded, bursty, and provider-pinned proxy-fault conditions with accounting; one joint control and one second-provider placement matrix passed, while replication remains. |
 | R5 quality/cost | Partial | Six-case real GLM screen passed development checks; full real workload not yet clean or qualified. |
 | R6 policy transport | Partial | Native policy packet extraction and local mock direct/Agmina comparison pass; live policy and closed loop remain. |
 | R7 heterogeneous compute | Pending | Requires a stable baseline and second endpoint/device class. |
@@ -123,6 +123,22 @@ second video, so it is not a quality result.
   no-control baseline consumed 4/5 through 4 dispatches for `219` micro-USD. All seven generation
   records audited to Together at `z-ai/glm-5.3-flash-20260826`, with zero unknown charges. This is
   a bounded joint-control observation, not a general cost or quality claim.
+- **R4 provider-pinned loss replication:** one retained real request was completed upstream and
+  deliberately dropped by the localhost proxy. Agmina recorded one unknown attempt and quarantined
+  the pool; the retained generation audited to Together at
+  `z-ai/glm-5.3-flash-20260826`, and explicit reconciliation settled `102` micro-USD with no
+  remaining unknown attempts. This validates transport-failure accounting under provider pinning,
+  not semantic quality.
+- **R4 second-provider placement matrix:** the same 16-job bursty plan ran under FIFO, EDF, and
+  least-slack with Fireworks-only routing. All 48 jobs consumed with complete metadata and zero
+  unknown charges; Fireworks p50 completion was `13.72/20.59/22.44 s` for FIFO/EDF/least-slack,
+  versus Together's `16.55/12.21/12.92 s`, and known usage was `4,802` versus `2,933` micro-USD.
+  This is a bounded placement observation with mixed scheduler behavior, not a provider winner.
+- **R4 overloaded placement retry:** the first Fireworks-only run of the retained 32-job `s8`
+  plan is incomplete. Its first FIFO request received HTTP 429, producing one unknown attempt and
+  pool quarantine; FIFO then expired 31 jobs, EDF consumed 13/32, and least-slack 4/32. Only 17
+  generation records were available, so this run is excluded from placement conclusions and its
+  unresolved hold remains explicitly isolated.
 - **R4 ablation plumbing:** the paced load plan now passes explicit cache/latest-only controls and
   optional stable evidence IDs into runtime jobs. Retained mock smoke `...-002` produced one cache
   hit and superseded one queued older latest-only request when a newer snapshot arrived; `...-001`
@@ -159,9 +175,9 @@ second video, so it is not a quality result.
    importer to reconcile the 2,091 real GLM attempt holds before any quality or cost claim.
 2. Reconcile the provider-side transport failure and remaining unknown attempt holds; no new
    paid full replay is justified until that is done.
-3. Repeat the dropped-response fault with Together-only routing, then qualify placement when a
-   second real endpoint path is available. Replicate the joint/cache/latest-only controls on more
-   than one trace before making a broader claim, then run the fixed-rate,
+3. Retry the second-provider `s8` placement condition after its rate-limit window with a fresh
+   campaign, then replicate placement with interleaved provider conditions. Replicate the
+   joint/cache/latest-only controls on more than one trace before making a broader claim, then run the fixed-rate,
    tuned-detector/motion-refresh, and StreamBudget adaptive baselines under the same held-out protocol.
 4. Keep R6 live policy, R7, and R8 downstream of the R5 quality gate.
 

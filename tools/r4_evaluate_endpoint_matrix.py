@@ -6,11 +6,24 @@ import hashlib
 import json
 from pathlib import Path
 
+from pydantic import ValidationError
+
+from agmina_runtime.load import LoadPlan
+
 SCHEDULERS = ("fifo", "edf", "slack")
 
 
 def read(path: Path):
     return json.loads(path.read_text(encoding="utf8"))
+
+
+def canonical_plan(value) -> dict:
+    """Normalize runtime defaults while keeping minimal evaluator fixtures usable."""
+    try:
+        # JSON validation performs the same list-to-tuple conversion as the runtime loader.
+        return json.loads(LoadPlan.model_validate_json(json.dumps(value)).model_dump_json())
+    except (ValidationError, ValueError, TypeError):
+        return value
 
 
 def semantic_digest(value) -> str:
@@ -29,7 +42,7 @@ def served_model_matches_config(served_model: str | None, configured_model: str)
 
 
 def evaluate(prep: Path, runs: Path, out: Path, generation_audit: Path | None = None) -> dict:
-    expected_plan = read(prep / "plan.json")
+    expected_plan = canonical_plan(read(prep / "plan.json"))
     audit_records = {}
     audit_providers = set()
     audit_models = set()
@@ -51,7 +64,7 @@ def evaluate(prep: Path, runs: Path, out: Path, generation_audit: Path | None = 
         root = runs / scheduler
         config = read(root / "config.json")
         report = read(root / "report.json")
-        plan = read(root / "plan.json")
+        plan = canonical_plan(read(root / "plan.json"))
         plan_hash = semantic_digest(plan)
         states = report.get("states", {})
         terminal = sum(states.values()) == report.get("offered", -1)

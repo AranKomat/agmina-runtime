@@ -57,3 +57,34 @@ def test_evaluator_pins_revision_from_generation_audit(tmp_path):
     result = evaluate(prep, runs, tmp_path / "evaluation.json", audit)
     assert result["generation_metadata_complete"] is True
     assert result["served_provider_revision_pinned"] is True
+
+
+def test_evaluator_normalizes_runtime_load_defaults(tmp_path):
+    prep = tmp_path / "prep"
+    runs = tmp_path / "runs"
+    prep.mkdir()
+    # Preparation artifacts from older runs may omit fields that LoadPlan supplies by default.
+    prepared = {"provenance": "fixture", "synthetic_inputs": False,
+                "jobs": [{"id": "j1", "session": "s", "model": "vision",
+                          "workload": "semantic", "release_ms": 0,
+                          "deadline_after_ms": 1000, "evidence_hashes": ["a" * 64],
+                          "payload_json": "{}"}]}
+    (prep / "plan.json").write_text(json.dumps(prepared))
+    for scheduler in ("fifo", "edf", "slack"):
+        root = runs / scheduler
+        root.mkdir(parents=True)
+        (root / "config.json").write_text(json.dumps({
+            "scheduler": scheduler,
+            "endpoints": [{"id": "endpoint", "model_name": "fixture"}],
+        }))
+        normalized = _MODULE.canonical_plan(prepared)
+        (root / "plan.json").write_text(json.dumps(normalized))
+        (root / "report.json").write_text(json.dumps({
+            "offered": 1,
+            "states": {"consumed": 1},
+            "budget": {"attempts": 1, "unknown_attempts": 0, "held_microusd": 0,
+                        "known_microusd": 0},
+            "timing": {},
+        }))
+    result = evaluate(prep, runs, tmp_path / "evaluation.json")
+    assert result["shared_plan"] is True

@@ -17,7 +17,7 @@ hardware, or physical-task result.
 | R1 | **Partial: retained read-only integration** | Fresh two-parent fault matrix, retained lineage comparison, and clock-reset/generation fences pass; explicit parent task/episode identity fields remain absent in StreamBudget. |
 | R2 | **Partial: real direct/Agmina transport pair** | One corrected GLM packet completed directly and through Agmina with identical request hashes and usable outputs; provider revision and charge reconciliation remain open. |
 | R3 | **Partial: real 1/2/4/8-session load complete** | 1/2 sessions completed all offered jobs; 4/8 sessions hit the declared freshness boundary. Repeat with a declared capacity target only if needed. |
-| R4 | **Partial: scheduler plus bounded cache/latest observations** | Scheduler matrices, burst handling, a provider-pinned real-link delay probe, and one joint control are complete as bounded observations; placement, provider-pinned loss replication, and broader replication remain. |
+| R4 | **Partial: scheduler plus bounded cache/latest observations** | Scheduler matrices, burst handling, provider-pinned delay/loss probes, one joint control, and one second-provider placement matrix are complete as bounded observations; replication remains. |
 | R5 | **Partial: real GLM replay transport incomplete** | Six-case development scoring passed, but the full two-video replay failed on one provider transport path; labels and charges remain unresolved, so this is not a qualified benchmark result. |
 | R6 | **Partial: retained replay + native RPC contract** | A native RoboLab policy recording round-trips through Agmina, and the inspected reset/infer boundary now has a local proposal-only adapter test; live direct-vs-Agmina timing and closed-loop outcomes remain unqualified. |
 | R7 | **Pending** | Compare one additional compute/site class with model and precision differences disclosed. |
@@ -241,6 +241,19 @@ evidence that any particular provider actually served a request.
   covered all 40 dispatched attempts, all Together served
   `z-ai/glm-5.3-flash-20260826`, and all `2,271` micro-USD were known. This is pinned transport
   evidence, not a semantic or universal scheduler result.
+- [x] Run one matched second-provider placement matrix on the same retained 16-job bursty plan;
+  `runs/r4-bursty-fireworks-20260926-002` pinned all three scheduler conditions to Fireworks and
+  audited all 48 generations at `z-ai/glm-5.3-flash-20260826`. Every condition consumed 16/16 with
+  zero unknown charges. Compared with the Together matrix, Fireworks had lower FIFO p50 completion
+  (`13.72 s` vs `16.55 s`) but higher EDF (`20.59 s` vs `12.21 s`) and least-slack (`22.44 s` vs
+  `12.92 s`) p50 completion, while total known usage was `4,802` vs `2,933` micro-USD. This is a
+  bounded placement observation, not a provider or scheduler winner.
+- [ ] Replicate the second-provider placement matrix on the retained 32-job `s8` load. The first
+  Fireworks attempt is explicitly incomplete at
+  `runs/r4-endpoint-matrix-s8-fireworks-20260926-001`: its first FIFO request received HTTP 429,
+  became one unknown attempt, quarantined the pool, and caused 31 expiries; EDF consumed 13/32 and
+  least-slack 4/32. Only 17 generation records were available and the evaluator reports incomplete
+  accounting, so these partial numbers are not placement evidence.
 - [ ] Replicate and qualify on the real endpoint while holding model, precision, source data, server
   batching, pool capacity, and deadline semantics fixed, with the served provider revision pinned
   in every dispatched attempt.
@@ -252,14 +265,19 @@ evidence that any particular provider actually served a request.
   Together at `z-ai/glm-5.3-flash-20260826`, with zero unknown charges. This is a bounded control
   observation, not a general cost or quality claim.
 - [ ] Compare scheduler-only, cache-only, latest-only, placement-only, and joint variants across
-  replicated traces and a second real endpoint/device path.
+  replicated traces, interleaved provider conditions, and additional real endpoint/device paths.
 - [x] Measure unloaded/near-capacity, overloaded, bursty, and one isolated real-link delay/loss
-  condition in retained real campaigns. The real proxy result remains bounded because provider
-  identity mixed and the delay condition was not replicated.
+  condition in retained real campaigns. The delay matrix remains bounded because provider identity
+  mixed; the separately pinned loss probe is reconciled below.
 - [x] Compare one provider-pinned real-link delay condition with the deterministic mock plumbing;
   the real condition is now retained above.
-- [ ] Repeat the dropped-response loss probe with `provider.only=["together"]` and compare its
-  reconciled accounting/quarantine behavior with the deterministic loss control.
+- [x] Repeat the dropped-response loss probe with `provider.only=["together"]` and compare its
+  reconciled accounting/quarantine behavior with the deterministic loss control; see
+  `runs/r4-real-proxy-loss-pinned-20260926-001`. The single upstream 200 response was dropped
+  after completion, producing one unknown attempt and quarantining the pool. The retained
+  generation record resolved to Together at `z-ai/glm-5.3-flash-20260826`; reconciliation settled
+  `102` micro-USD with zero remaining unknown attempts. This is a transport/accounting result, not
+  semantic-quality evidence.
 
 **Current limitation:** synthetic replay is evidence for coordinator behavior only, not endpoint
 throughput or semantic quality.
@@ -286,8 +304,8 @@ with 1,842 micro-USD of provider-reported usage in total. Together with the reta
 one/two-session cohorts and the s4 matrix, this gives a first load curve from unloaded through
 overloaded conditions. The same audit found 10, 11, and 9 successful Together generation records
 for the dispatched jobs, all with served revision `z-ai/glm-5.3-flash-20260826`. It does not isolate
-injected loss, placement, cache/latest-only behavior, or broader scheduler replication, so R4 remains
-partial.
+injected loss, cache/latest-only behavior, or broader scheduler replication; the separate Fireworks
+placement attempt at the same load was incomplete, so R4 remains partial.
 
 The small real ablation probe is not a quality result. The corrected cache condition used one paid
 model request and served the duplicate from the exact historical cache (`1` hit, `55` micro-USD,
@@ -350,6 +368,29 @@ records were audited after provider metadata propagation and all resolved to Tog
 `z-ai/glm-5.3-flash-20260826`; there were no unknown charges. This is one small joint-control
 observation, not evidence that the controls preserve semantic quality or deliver a general cost
 reduction.
+
+The provider-pinned loss replication used the retained single-job trace through the localhost proxy
+with `drop-count=1`. The upstream returned HTTP 200 and a generation ID, but the proxy intentionally
+closed the client connection before forwarding the response. Agmina recorded one unknown attempt and
+quarantined the `openrouter` pool as required. The generation was later audited as Together serving
+`z-ai/glm-5.3-flash-20260826` and the explicit charge export settled `102` micro-USD, clearing the
+hold. This reproduces the real-link fault and reconciliation path under provider pinning; it does
+not establish semantic quality or a scheduler ranking.
+
+The first attempted Fireworks batch at `runs/r4-bursty-fireworks-20260926-001` is retained as an
+operator-setup negative control: the credential environment was not exported, all 48 jobs failed
+locally before network dispatch, and no provider generation IDs or charges were recorded. It is
+excluded from placement evidence. The corrected Fireworks matrix is the `...-002` campaign above.
+
+The first overloaded Fireworks replication is also retained as incomplete rather than retried
+automatically. Its HTTP 429 occurred before a provider generation ID was returned, so the 2,000
+micro-USD admission hold for that unknown attempt remains unresolved in that isolated campaign; no
+charge is treated as zero. A fresh retry should wait for the provider rate-limit window and use a
+new campaign directory.
+
+The endpoint-matrix evaluator now canonicalizes `LoadPlan` JSON through the runtime model before
+comparing preparation and run artifacts. This preserves compatibility with older preparation files
+that omit optional load-item defaults while still rejecting genuinely different plans.
 
 The load driver now passes explicit `cacheable`, `replace_key`, `discardable`, `operation`, and
 optional stable `observation_ids` fields into `Job`. The retained zero-cost smoke confirms that two

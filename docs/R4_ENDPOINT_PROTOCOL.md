@@ -69,6 +69,19 @@ the cache enabled only for the `joint` and `cache` bundles. The executed joint r
 at `runs/r4-joint-ablation-20260926-001`; it is a bounded control observation and must be replicated
 before making a general cost or semantic-quality claim.
 
+For a bounded placement comparison, reuse the same canonical plan and run all three scheduler
+conditions against a second provider with fallbacks disabled. Audit every dispatched generation and
+require the same model revision, plan hash, terminal accounting, and no unknown charges before
+comparing timing or cost. The Fireworks matrix at
+`runs/r4-bursty-fireworks-20260926-002` is one such observation against the earlier Together
+matrix; its mixed scheduler response is intentionally not generalized.
+
+The provider-pinned loss control uses the same localhost proxy with `--drop-count 1` and must retain
+the upstream generation ID before closing the client connection. The executed probe is retained at
+`runs/r4-real-proxy-loss-pinned-20260926-001`: the runtime records an unknown attempt and quarantines
+the pool immediately, then `tools/reconcile_charges.py` settles the explicit provider charge after
+metadata is available. A reconciled loss probe validates accounting and quarantine behavior only.
+
 ## Load-plan controls for isolated ablations
 
 `LoadItem` exposes the runtime controls needed for those variants without changing the
