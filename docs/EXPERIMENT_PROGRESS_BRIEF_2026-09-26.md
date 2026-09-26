@@ -19,7 +19,7 @@ second video, so it is not a quality result.
 | R1 application bridges | Partial | StreamBudget and Physical Harness read-only bridges, lineage, fault and clock fences pass; parent task/episode identity is still absent upstream. |
 | R2 real endpoint | Partial | Direct vs Agmina GLM packet had identical request hash and usable outputs; provider/cost reconciliation remains open. |
 | R3 paced load | Partial | Real 1/2/4/8-session cohort completed; 1/2 clean, 4/8 freshness-limited. |
-| R4 scheduling | Partial, synthetic | Scheduler replay passes; real endpoint placement/cancellation study remains. |
+| R4 scheduling | Partial, first real observation | FIFO/EDF/least-slack ran on one retained cohort with complete accounting; replication and provider-revision pinning remain. |
 | R5 quality/cost | Partial | Six-case real GLM screen passed development checks; full real workload not yet clean or qualified. |
 | R6 policy transport | Partial | Native policy packet extraction and local mock direct/Agmina comparison pass; live policy and closed loop remain. |
 | R7 heterogeneous compute | Pending | Requires a stable baseline and second endpoint/device class. |
@@ -82,8 +82,11 @@ second video, so it is not a quality result.
   historical campaign remains untouched because no per-attempt provider export is available.
 - **R4 matrix preparation:** a no-dispatch manifest now freezes the first real scheduler comparison
   over the retained 16-job/four-session `s4` cohort, holding endpoint, pool capacity, source data,
-  deadlines, and provider routing constant across FIFO, EDF, and least-slack. It has not been run
-  because the configured provider credential is absent.
+  deadlines, and provider routing constant across FIFO, EDF, and least-slack.
+- **R4 bounded endpoint observation:** the matrix then ran once per scheduler. FIFO consumed 14/16,
+  EDF 16/16, and least-slack 15/16. All charges were known (`2,555` micro-USD total), with no
+  unknown holds or pool quarantine. The served provider revision was not pinned, so this remains
+  transport/capacity evidence rather than a scheduler or quality conclusion.
 
 ## Current Runtime Contract
 

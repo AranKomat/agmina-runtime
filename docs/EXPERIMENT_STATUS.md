@@ -17,7 +17,7 @@ hardware, or physical-task result.
 | R1 | **Partial: retained read-only integration** | Fresh two-parent fault matrix, retained lineage comparison, and clock-reset/generation fences pass; explicit parent task/episode identity fields remain absent in StreamBudget. |
 | R2 | **Partial: real direct/Agmina transport pair** | One corrected GLM packet completed directly and through Agmina with identical request hashes and usable outputs; provider revision and charge reconciliation remain open. |
 | R3 | **Partial: real 1/2/4/8-session load complete** | 1/2 sessions completed all offered jobs; 4/8 sessions hit the declared freshness boundary. Repeat with a declared capacity target only if needed. |
-| R4 | **Partial: synthetic only** | Deterministic scheduler replay and mock contention pass; real endpoint placement/cancellation study remains. |
+| R4 | **Partial: first real scheduler observation** | The first real FIFO/EDF/least-slack matrix completed with full accounting; provider revision, replication, and broader placement/cancellation conditions remain. |
 | R5 | **Partial: real GLM replay transport incomplete** | Six-case development scoring passed, but the full two-video replay failed on one provider transport path; labels and charges remain unresolved, so this is not a qualified benchmark result. |
 | R6 | **Partial: retained replay + native RPC contract** | A native RoboLab policy recording round-trips through Agmina, and the inspected reset/infer boundary now has a local proposal-only adapter test; live direct-vs-Agmina timing and closed-loop outcomes remain unqualified. |
 | R7 | **Pending** | Compare one additional compute/site class with model and precision differences disclosed. |
@@ -184,8 +184,11 @@ evidence that any particular provider actually served a request.
 - [x] Freeze the first real-endpoint scheduler matrix and generate its no-dispatch manifest from the
   retained `s4` plan; see `docs/R4_ENDPOINT_PROTOCOL.md` and
   `tools/r4_prepare_endpoint_matrix.py`.
-- [ ] Repeat on the real endpoint while holding model, precision, source data, server batching,
-  pool capacity, and deadline semantics fixed.
+- [x] Run the first bounded real-endpoint scheduler matrix with the retained plan and evaluate all
+  three conditions; see `runs/r4-endpoint-matrix-20260926-002` and
+  `tools/r4_evaluate_endpoint_matrix.py`.
+- [ ] Replicate and qualify on the real endpoint while holding model, precision, source data, server
+  batching, pool capacity, and deadline semantics fixed, with the served provider revision pinned.
 - [ ] Compare scheduler-only, cache-only, latest-only, placement-only, and joint variants.
 - [ ] Measure unloaded, near-capacity, overloaded, bursty, and injected-delay/loss conditions.
 
@@ -199,6 +202,13 @@ in time; EDF admitted 108/335 policy requests in time while mapping fell to 7/26
 intermediate but had the highest queue and completion-age p95 values. This is a synthetic workload
 tradeoff, not an endpoint or quality result, and it reinforces the requirement to report outcomes by
 workload rather than selecting a universal scheduler winner.
+
+The first real endpoint matrix used the retained 16-job/four-session `s4` plan with one endpoint
+slot and the same declared cap for FIFO, EDF, and least-slack. FIFO consumed 14/16 jobs, EDF 16/16,
+and least-slack 15/16. All three reports had zero unknown attempts, zero held charges, and no pool
+quarantine; provider-reported usage summed to 2,555 micro-USD. This is a bounded transport/capacity
+observation only. The served provider revision was not pinned, and the cohort is too small to select
+a scheduler or claim a general endpoint improvement.
 
 ### R5 — StreamBudget Quality And Cost
 
