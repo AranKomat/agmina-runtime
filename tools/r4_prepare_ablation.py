@@ -10,7 +10,8 @@ from agmina_runtime.load import LoadPlan
 
 
 def prepare(base_config_path: Path, source_plan_path: Path, out: Path, cap_microusd: int,
-            campaign_prefix: str, latest_deadline_ms: int | None) -> dict:
+            campaign_prefix: str, latest_deadline_ms: int | None,
+            include_joint: bool = False) -> dict:
     if out.exists():
         raise FileExistsError(f"Output already exists: {out}")
     config = RuntimeConfig.model_validate_json(base_config_path.read_text(encoding="utf8"))
@@ -61,6 +62,10 @@ def prepare(base_config_path: Path, source_plan_path: Path, out: Path, cap_micro
             provenance="R4 matched no-replacement baseline from one retained source item; no quality claim",
             synthetic_inputs=source.synthetic_inputs, jobs=baseline_items),
     }
+    if include_joint:
+        plans["joint"] = LoadPlan(
+            provenance="R4 real joint cache plus latest-only ablation from one retained source item; no quality claim",
+            synthetic_inputs=source.synthetic_inputs, jobs=cache_items + latest_items)
     out.mkdir(parents=True)
     conditions = []
     for name, plan in plans.items():
@@ -70,8 +75,8 @@ def prepare(base_config_path: Path, source_plan_path: Path, out: Path, cap_micro
             "campaign": f"{campaign_prefix}-{name}",
             "max_attempts": len(plan.jobs),
             "max_microusd": cap_microusd,
-            "cache_entries": 64 if name == "cache" else 0,
-            "cache_bytes": 8_000_000 if name == "cache" else 0,
+            "cache_entries": 64 if name in {"cache", "joint"} else 0,
+            "cache_bytes": 8_000_000 if name in {"cache", "joint"} else 0,
         })
         (condition / "config.json").write_text(variant.model_dump_json(indent=2) + "\n",
                                                   encoding="utf8")
@@ -107,9 +112,12 @@ def main():
     parser.add_argument("--cap-microusd", type=int, default=8000)
     parser.add_argument("--campaign-prefix", default="r4-real-ablation")
     parser.add_argument("--latest-deadline-ms", type=int, default=None)
+    parser.add_argument("--include-joint", action="store_true",
+                        help="Also prepare the combined cache plus latest-only condition")
     args = parser.parse_args()
     print(json.dumps(prepare(args.base_config, args.source_plan, args.out, args.cap_microusd,
-                             args.campaign_prefix, args.latest_deadline_ms), indent=2, sort_keys=True))
+                             args.campaign_prefix, args.latest_deadline_ms, args.include_joint),
+                      indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":

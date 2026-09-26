@@ -19,7 +19,7 @@ second video, so it is not a quality result.
 | R1 application bridges | Partial | StreamBudget and Physical Harness read-only bridges, lineage, fault and clock fences pass; parent task/episode identity is still absent upstream. |
 | R2 real endpoint | Partial | Direct vs Agmina GLM packet had identical request hash and usable outputs; provider/cost reconciliation remains open. |
 | R3 paced load | Partial | Real 1/2/4/8-session cohort completed; 1/2 clean, 4/8 freshness-limited. |
-| R4 scheduling | Partial, bounded real observations | FIFO/EDF/least-slack ran on retained unloaded, overloaded, bursty, and proxy-fault conditions with accounting; provider-mixed proxy delay, placement, and broader replication remain. |
+| R4 scheduling | Partial, bounded real observations | FIFO/EDF/least-slack ran on retained unloaded, overloaded, bursty, and provider-pinned proxy-fault conditions with accounting; one joint cache/latest-only control passed, while placement and broader replication remain. |
 | R5 quality/cost | Partial | Six-case real GLM screen passed development checks; full real workload not yet clean or qualified. |
 | R6 policy transport | Partial | Native policy packet extraction and local mock direct/Agmina comparison pass; live policy and closed loop remain. |
 | R7 heterogeneous compute | Pending | Requires a stable baseline and second endpoint/device class. |
@@ -112,6 +112,17 @@ second video, so it is not a quality result.
 - **R4 provider pin control:** one direct request with `provider.only=["together"]` consumed for
   `48` micro-USD and, after a short metadata propagation delay, was confirmed as Together serving
   `z-ai/glm-5.3-flash-20260826`. This is a routing-control check, not a scheduler or quality result.
+- **R4 provider-pinned delay replication:** the same 16-job bursty workload was forwarded through
+  the one-second proxy with Together-only routing. FIFO consumed 15/16, EDF 14/16, and least-slack
+  11/16; 40/48 dispatched attempts had complete metadata, all were Together at
+  `z-ai/glm-5.3-flash-20260826`, and known usage was `2,271` micro-USD. This is pinned transport
+  evidence, not a scheduler or quality conclusion.
+- **R4 joint cache/latest-only ablation:** a five-job Together-only trace combined one exact-cache
+  duplicate with a queued latest-only replacement. The joint condition consumed 4/5 offered jobs
+  through 3 dispatches, with one cache hit and one supersession, for `149` micro-USD; the matched
+  no-control baseline consumed 4/5 through 4 dispatches for `219` micro-USD. All seven generation
+  records audited to Together at `z-ai/glm-5.3-flash-20260826`, with zero unknown charges. This is
+  a bounded joint-control observation, not a general cost or quality claim.
 - **R4 ablation plumbing:** the paced load plan now passes explicit cache/latest-only controls and
   optional stable evidence IDs into runtime jobs. Retained mock smoke `...-002` produced one cache
   hit and superseded one queued older latest-only request when a newer snapshot arrived; `...-001`
@@ -148,9 +159,9 @@ second video, so it is not a quality result.
    importer to reconcile the 2,091 real GLM attempt holds before any quality or cost claim.
 2. Reconcile the provider-side transport failure and remaining unknown attempt holds; no new
    paid full replay is justified until that is done.
-3. Repeat the scheduler and real-proxy conditions with a pinned provider revision, then qualify
-   placement when a second real endpoint path is available. Keep the cache and latest-only results
-   as bounded observations, then run the fixed-rate,
+3. Repeat the dropped-response fault with Together-only routing, then qualify placement when a
+   second real endpoint path is available. Replicate the joint/cache/latest-only controls on more
+   than one trace before making a broader claim, then run the fixed-rate,
    tuned-detector/motion-refresh, and StreamBudget adaptive baselines under the same held-out protocol.
 4. Keep R6 live policy, R7, and R8 downstream of the R5 quality gate.
 

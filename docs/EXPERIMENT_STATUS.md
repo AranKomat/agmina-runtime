@@ -17,7 +17,7 @@ hardware, or physical-task result.
 | R1 | **Partial: retained read-only integration** | Fresh two-parent fault matrix, retained lineage comparison, and clock-reset/generation fences pass; explicit parent task/episode identity fields remain absent in StreamBudget. |
 | R2 | **Partial: real direct/Agmina transport pair** | One corrected GLM packet completed directly and through Agmina with identical request hashes and usable outputs; provider revision and charge reconciliation remain open. |
 | R3 | **Partial: real 1/2/4/8-session load complete** | 1/2 sessions completed all offered jobs; 4/8 sessions hit the declared freshness boundary. Repeat with a declared capacity target only if needed. |
-| R4 | **Partial: scheduler plus bounded cache/latest observations** | Scheduler matrices, burst handling, and reconciled real-link fault probes are complete as bounded observations; provider-mixed delay results, placement, joint variants, and broader replication remain. |
+| R4 | **Partial: scheduler plus bounded cache/latest observations** | Scheduler matrices, burst handling, a provider-pinned real-link delay probe, and one joint control are complete as bounded observations; placement, provider-pinned loss replication, and broader replication remain. |
 | R5 | **Partial: real GLM replay transport incomplete** | Six-case development scoring passed, but the full two-video replay failed on one provider transport path; labels and charges remain unresolved, so this is not a qualified benchmark result. |
 | R6 | **Partial: retained replay + native RPC contract** | A native RoboLab policy recording round-trips through Agmina, and the inspected reset/infer boundary now has a local proposal-only adapter test; live direct-vs-Agmina timing and closed-loop outcomes remain unqualified. |
 | R7 | **Pending** | Compare one additional compute/site class with model and precision differences disclosed. |
@@ -235,14 +235,31 @@ evidence that any particular provider actually served a request.
   `z-ai/glm-5.3-flash-20260826`. The first immediate metadata query returned 404 and was retained;
   the later recheck succeeded, so future campaign audits should allow propagation before judging
   a generation record missing.
+- [x] Repeat the real-link delay matrix with `provider.only=["together"]`; see
+  `runs/r4-bursty-proxy-delay-pinned-20260926-001`. FIFO consumed 15/16, EDF 14/16, and
+  least-slack 11/16 under the same one-second response delay and 60-second deadline. The audit
+  covered all 40 dispatched attempts, all Together served
+  `z-ai/glm-5.3-flash-20260826`, and all `2,271` micro-USD were known. This is pinned transport
+  evidence, not a semantic or universal scheduler result.
 - [ ] Replicate and qualify on the real endpoint while holding model, precision, source data, server
   batching, pool capacity, and deadline semantics fixed, with the served provider revision pinned
   in every dispatched attempt.
-- [ ] Compare scheduler-only, cache-only, latest-only, placement-only, and joint variants.
+- [x] Compare one bounded joint cache-plus-latest-only condition with its matched baseline;
+  `runs/r4-joint-ablation-20260926-001` offered the same five-job trace to both conditions.
+  The joint condition made one exact-cache hit and one latest-only supersession, consumed 4/5
+  offered jobs through 3 dispatches for `149` micro-USD; the baseline consumed 4/5 through 4
+  dispatches for `219` micro-USD. Generation audit found all seven dispatched records served by
+  Together at `z-ai/glm-5.3-flash-20260826`, with zero unknown charges. This is a bounded control
+  observation, not a general cost or quality claim.
+- [ ] Compare scheduler-only, cache-only, latest-only, placement-only, and joint variants across
+  replicated traces and a second real endpoint/device path.
 - [x] Measure unloaded/near-capacity, overloaded, bursty, and one isolated real-link delay/loss
   condition in retained real campaigns. The real proxy result remains bounded because provider
   identity mixed and the delay condition was not replicated.
-- [ ] Replicate real-link delay/loss with a pinned provider and compare it with the deterministic mock.
+- [x] Compare one provider-pinned real-link delay condition with the deterministic mock plumbing;
+  the real condition is now retained above.
+- [ ] Repeat the dropped-response loss probe with `provider.only=["together"]` and compare its
+  reconciled accounting/quarantine behavior with the deterministic loss control.
 
 **Current limitation:** synthetic replay is evidence for coordinator behavior only, not endpoint
 throughput or semantic quality.
@@ -316,6 +333,23 @@ The preceding proxy implementation failure is retained at
 `runs/r4-bursty-proxy-delay-20260926-001` and is excluded from the corrected totals. It produced
 three transport-failure attempts whose upstream provider IDs were not logged, so their estimated
 `6,000` micro-USD remains an explicit unresolved hold rather than being treated as zero cost.
+
+The provider-pinned repeat used the same all-at-once workload and one-second delay with an explicit
+Together-only route. It consumed 40/48 dispatched jobs, expired 8 at the 60-second freshness
+boundary, and settled `2,271` micro-USD with no unknown attempts. FIFO consumed 15/16, EDF 14/16,
+and least-slack 11/16. All 40 generation records agreed on Together and
+`z-ai/glm-5.3-flash-20260826`, making this a valid pinned transport observation; it still does not
+select a scheduler or establish semantic equivalence.
+
+The joint ablation combined the exact historical cache and latest-only replacement controls in one
+five-job condition, then compared it with the same trace with both controls disabled. The joint
+condition consumed four jobs through three dispatched calls: one duplicate was served from cache
+and the older latest-only request was superseded. It settled `149` micro-USD. The matched baseline
+consumed four jobs through four dispatched calls and settled `219` micro-USD. The seven generation
+records were audited after provider metadata propagation and all resolved to Together serving
+`z-ai/glm-5.3-flash-20260826`; there were no unknown charges. This is one small joint-control
+observation, not evidence that the controls preserve semantic quality or deliver a general cost
+reduction.
 
 The load driver now passes explicit `cacheable`, `replace_key`, `discardable`, `operation`, and
 optional stable `observation_ids` fields into `Job`. The retained zero-cost smoke confirms that two

@@ -63,6 +63,12 @@ winner. Follow-up load levels should reuse the same source/model and separately 
 near-capacity, overloaded, bursty, and injected-delay/loss conditions. Cache, latest-only, placement,
 and joint variants are separate ablations and must not be mixed into the scheduler-only result.
 
+The reproducible preparation tool supports the combined control with `--include-joint`. That
+condition emits the exact-cache pair and the three-job latest-only trace in one five-job plan, with
+the cache enabled only for the `joint` and `cache` bundles. The executed joint result is retained
+at `runs/r4-joint-ablation-20260926-001`; it is a bounded control observation and must be replicated
+before making a general cost or semantic-quality claim.
+
 ## Load-plan controls for isolated ablations
 
 `LoadItem` exposes the runtime controls needed for those variants without changing the
