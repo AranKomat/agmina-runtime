@@ -19,7 +19,7 @@ second video, so it is not a quality result.
 | R1 application bridges | Partial | StreamBudget and Physical Harness read-only bridges, lineage, fault and clock fences pass; parent task/episode identity is still absent upstream. |
 | R2 real endpoint | Partial | Direct vs Agmina GLM packet had identical request hash and usable outputs; provider/cost reconciliation remains open. |
 | R3 paced load | Partial | Real 1/2/4/8-session cohort completed; 1/2 clean, 4/8 freshness-limited. |
-| R4 scheduling | Partial, pinned bounded observations | FIFO/EDF/least-slack ran on retained 16-job and 32-job cohorts with complete accounting; Together served `z-ai/glm-5.3-flash-20260826` on all dispatched jobs, while placement and broader replication remain. |
+| R4 scheduling | Partial, bounded real observations | FIFO/EDF/least-slack ran on retained unloaded, overloaded, bursty, and proxy-fault conditions with accounting; provider-mixed proxy delay, placement, and broader replication remain. |
 | R5 quality/cost | Partial | Six-case real GLM screen passed development checks; full real workload not yet clean or qualified. |
 | R6 policy transport | Partial | Native policy packet extraction and local mock direct/Agmina comparison pass; live policy and closed loop remain. |
 | R7 heterogeneous compute | Pending | Requires a stable baseline and second endpoint/device class. |
@@ -101,6 +101,14 @@ second video, so it is not a quality result.
   least-slack with zero unknown charges. EDF had the lowest median queue/completion latency
   (`10.18/12.21 s`), ahead of FIFO (`14.94/16.55 s`) and least-slack (`10.99/12.92 s`). This is
   a bounded burst-handling observation on one endpoint, not a universal scheduler ranking.
+- **R4 real-link fault probes:** the corrected localhost proxy campaign injected a declared 1-second
+  response delay and consumed 37/48 dispatched jobs; 11 expired and all `2,430` micro-USD were known.
+  The served model revision was uniform, but provider identity mixed Together and Parasail. A
+  separate dropped-response probe quarantined the pool and was reconciled from its retained provider
+  generation receipt to `95` micro-USD. These are bounded transport/accounting observations, not a
+  pinned scheduler or quality result. The preceding proxy implementation failure is retained
+  separately with three unresolved estimated holds (`6,000` micro-USD) because it did not log the
+  upstream generation IDs; those attempts are excluded from the corrected totals.
 - **R4 ablation plumbing:** the paced load plan now passes explicit cache/latest-only controls and
   optional stable evidence IDs into runtime jobs. Retained mock smoke `...-002` produced one cache
   hit and superseded one queued older latest-only request when a newer snapshot arrived; `...-001`
@@ -137,10 +145,9 @@ second video, so it is not a quality result.
    importer to reconcile the 2,091 real GLM attempt holds before any quality or cost claim.
 2. Reconcile the provider-side transport failure and remaining unknown attempt holds; no new
    paid full replay is justified until that is done.
-3. Use the now-pinned Together revision when running a matched scheduler-only replication with the
-   same 60-second deadline, then qualify placement when a second real endpoint path is available. Keep the cache and
-   latest-only results as bounded observations, not general cost claims; use an isolated real proxy for
-   delay/loss before comparing it with the zero-cost control, then run the fixed-rate,
+3. Repeat the scheduler and real-proxy conditions with a pinned provider revision, then qualify
+   placement when a second real endpoint path is available. Keep the cache and latest-only results
+   as bounded observations, then run the fixed-rate,
    tuned-detector/motion-refresh, and StreamBudget adaptive baselines under the same held-out protocol.
 4. Keep R6 live policy, R7, and R8 downstream of the R5 quality gate.
 

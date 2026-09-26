@@ -44,6 +44,14 @@ provider's dated revision suffix, such as `z-ai/glm-5.3-flash` and
 `z-ai/glm-5.3-flash-20260826`. This is identity/accounting evidence only; it is not semantic-quality
 evidence and does not reconcile invoices by itself.
 
+The localhost-only `tools/r4_real_proxy.py` is the controlled real-link fault tool. It forwards the
+operator's exact request to the declared upstream, adds a fixed response delay or drops a bounded
+number of responses after upstream completion, and writes request/provider-generation records to a
+JSONL log. It has no retry behavior. A dropped response intentionally produces an unknown attempt
+and pool quarantine; reconcile that attempt from the retained generation ID before including its
+charge in any report. A proxy run that receives more than one provider identity is transport
+evidence only and cannot qualify a provider-pinned scheduler comparison.
+
 The first matrix can establish a scheduler-specific endpoint result only if all three conditions use
 the same declared endpoint and have complete accounting. It does not establish a universal scheduler
 winner. Follow-up load levels should reuse the same source/model and separately compare unloaded,

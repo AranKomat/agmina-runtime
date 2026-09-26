@@ -17,7 +17,7 @@ hardware, or physical-task result.
 | R1 | **Partial: retained read-only integration** | Fresh two-parent fault matrix, retained lineage comparison, and clock-reset/generation fences pass; explicit parent task/episode identity fields remain absent in StreamBudget. |
 | R2 | **Partial: real direct/Agmina transport pair** | One corrected GLM packet completed directly and through Agmina with identical request hashes and usable outputs; provider revision and charge reconciliation remain open. |
 | R3 | **Partial: real 1/2/4/8-session load complete** | 1/2 sessions completed all offered jobs; 4/8 sessions hit the declared freshness boundary. Repeat with a declared capacity target only if needed. |
-| R4 | **Partial: scheduler plus bounded cache/latest observations** | Scheduler matrices and one matched latest-only baseline completed with full accounting; served revision is pinned for the retained matrices, while placement, real-link fault injection, and broader replication remain. |
+| R4 | **Partial: scheduler plus bounded cache/latest observations** | Scheduler matrices, burst handling, and reconciled real-link fault probes are complete as bounded observations; provider-mixed delay results, placement, joint variants, and broader replication remain. |
 | R5 | **Partial: real GLM replay transport incomplete** | Six-case development scoring passed, but the full two-video replay failed on one provider transport path; labels and charges remain unresolved, so this is not a qualified benchmark result. |
 | R6 | **Partial: retained replay + native RPC contract** | A native RoboLab policy recording round-trips through Agmina, and the inspected reset/infer boundary now has a local proposal-only adapter test; live direct-vs-Agmina timing and closed-loop outcomes remain unqualified. |
 | R7 | **Pending** | Compare one additional compute/site class with model and precision differences disclosed. |
@@ -218,13 +218,24 @@ evidence that any particular provider actually served a request.
   completion times (`10.18 s` / `12.21 s`) versus FIFO (`14.94 s` / `16.55 s`) and least-slack
   (`10.99 s` / `12.92 s`). Generation metadata was complete and pinned to Together's
   `z-ai/glm-5.3-flash-20260826`; this is not a universal scheduler result.
+- [x] Run an isolated real-link response-delay matrix and one dropped-response probe through
+  `tools/r4_real_proxy.py`. The corrected delay campaign is
+  `runs/r4-bursty-proxy-delay-20260926-002`: 37/48 dispatched jobs were consumed, 11 expired,
+  and all 37 charges were known (`2,430` micro-USD). The served model revision was consistent,
+  but provider identity mixed Together and Parasail, so this is not a pinned scheduler comparison.
+  The one-response loss probe `runs/r4-real-proxy-loss-20260926-001` recorded an upstream 200,
+  dropped the response, quarantined the pool, and was reconciled from its generation receipt to
+  `95` micro-USD with zero remaining unknown attempts. The first proxy implementation failure is
+  retained separately as negative evidence and is not included in these totals; its three attempts
+  remain explicit unknown holds because that buggy proxy did not retain provider generation IDs.
 - [ ] Replicate and qualify on the real endpoint while holding model, precision, source data, server
   batching, pool capacity, and deadline semantics fixed, with the served provider revision pinned
   in every dispatched attempt.
 - [ ] Compare scheduler-only, cache-only, latest-only, placement-only, and joint variants.
-- [x] Measure unloaded/near-capacity, overloaded, and bursty conditions in retained real matrices;
-  injected-delay/loss remains zero-cost control evidence until an isolated real proxy is available.
-- [ ] Measure an isolated real-link delay/loss condition and compare it with the deterministic mock.
+- [x] Measure unloaded/near-capacity, overloaded, bursty, and one isolated real-link delay/loss
+  condition in retained real campaigns. The real proxy result remains bounded because provider
+  identity mixed and the delay condition was not replicated.
+- [ ] Replicate real-link delay/loss with a pinned provider and compare it with the deterministic mock.
 
 **Current limitation:** synthetic replay is evidence for coordinator behavior only, not endpoint
 throughput or semantic quality.
@@ -283,6 +294,21 @@ charges and `2,933` micro-USD of known usage in aggregate. EDF's queue/completio
 `10.18/12.21` seconds, compared with FIFO's `14.94/16.55` and least-slack's `10.99/12.92`.
 This is useful burst-handling evidence under one endpoint and one retained payload cohort; it does
 not establish semantic equivalence, a universal scheduler ranking, or placement behavior.
+
+The isolated proxy campaign added a declared 1-second response delay while forwarding the same
+requests and responses through localhost. It consumed 37/48 dispatched jobs and expired 11 at the
+60-second freshness boundary, with `2,430` micro-USD known usage and no unknown holds. Generation
+metadata covered every dispatched job and the served model revision was uniform, but OpenRouter
+reported both Together and Parasail as providers, so scheduler or delay comparisons from this run
+must not be treated as provider-pinned. A separate one-request dropped-response probe proved the
+real transport-failure path: the upstream generation completed, the client saw a transport failure,
+the pool was quarantined, and the `95` micro-USD charge was reconciled from the proxy's retained
+generation ID.
+
+The preceding proxy implementation failure is retained at
+`runs/r4-bursty-proxy-delay-20260926-001` and is excluded from the corrected totals. It produced
+three transport-failure attempts whose upstream provider IDs were not logged, so their estimated
+`6,000` micro-USD remains an explicit unresolved hold rather than being treated as zero cost.
 
 The load driver now passes explicit `cacheable`, `replace_key`, `discardable`, `operation`, and
 optional stable `observation_ids` fields into `Job`. The retained zero-cost smoke confirms that two
