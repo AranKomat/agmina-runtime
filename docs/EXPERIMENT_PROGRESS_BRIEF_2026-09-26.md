@@ -106,8 +106,8 @@ second video, so it is not a quality result.
    importer to reconcile the 2,091 real GLM attempt holds before any quality or cost claim.
 2. Reconcile the provider-side transport failure and remaining unknown attempt holds; no new
    paid full replay is justified until that is done.
-3. Dispatch the prepared bounded R4 scheduler matrix once a provider credential is available, then
-   run the fixed-rate, tuned-detector/motion-refresh, and
+3. Pin the served provider revision and run the remaining bounded R4 placement/cache/latest-only
+   and injected-delay/loss variants, then run the fixed-rate, tuned-detector/motion-refresh, and
    StreamBudget adaptive baselines under the same held-out protocol.
 4. Keep R6 live policy, R7, and R8 downstream of the R5 quality gate.
 
