@@ -17,7 +17,7 @@ hardware, or physical-task result.
 | R1 | **Partial: retained read-only integration** | Fresh two-parent fault matrix, retained lineage comparison, and clock-reset/generation fences pass; explicit parent task/episode identity fields remain absent in StreamBudget. |
 | R2 | **Partial: real direct/Agmina transport pair** | One corrected GLM packet completed directly and through Agmina with identical request hashes and usable outputs; provider revision and charge reconciliation remain open. |
 | R3 | **Partial: real 1/2/4/8-session load complete** | 1/2 sessions completed all offered jobs; 4/8 sessions hit the declared freshness boundary. Repeat with a declared capacity target only if needed. |
-| R4 | **Partial: scheduler plus bounded cache/latest observations** | Scheduler matrices and one matched latest-only baseline completed with full accounting; provider revision, placement, real-link fault injection, and broader replication remain. |
+| R4 | **Partial: scheduler plus bounded cache/latest observations** | Scheduler matrices and one matched latest-only baseline completed with full accounting; served revision is pinned for the retained matrices, while placement, real-link fault injection, and broader replication remain. |
 | R5 | **Partial: real GLM replay transport incomplete** | Six-case development scoring passed, but the full two-video replay failed on one provider transport path; labels and charges remain unresolved, so this is not a qualified benchmark result. |
 | R6 | **Partial: retained replay + native RPC contract** | A native RoboLab policy recording round-trips through Agmina, and the inspected reset/infer boundary now has a local proposal-only adapter test; live direct-vs-Agmina timing and closed-loop outcomes remain unqualified. |
 | R7 | **Pending** | Compare one additional compute/site class with model and precision differences disclosed. |
@@ -120,7 +120,8 @@ read-only lineage and parent-behavior evidence, not a hosted model or quality re
 - [x] Run the same authorized packet directly and through Agmina; see
   `runs/r2-glm-direct-agmina-001`.
 - [ ] Measure cold load/compile separately from warm first-content and complete-usable-output time.
-- [ ] Pin the actually served provider revision and reconcile charge receipts/unknown-charge holds
+- [ ] Reconcile charge receipts/unknown-charge holds for the direct/Agmina pair; the later R4
+  matrices have a separate generation audit for their served revision.
   by attempt ID.
 
 **Gate:** valid native outputs, equivalent intended requests, complete accounting, and measured
@@ -207,8 +208,13 @@ evidence that any particular provider actually served a request.
 - [x] Run zero-cost injected-delay and unconfirmed-loss controls; see
   `runs/r4-injected-conditions-mock-20260926-001`. Delayed work consumed 4/4; the loss remained
   unknown and quarantined the mock pool as required.
+- [x] Audit retained OpenRouter generation metadata for the R4 matrices without making model calls;
+  `runs/r4-provider-generation-audit-20260926-001` returned 81/81 successful records, all from
+  Together serving `z-ai/glm-5.3-flash-20260826`. The audit is provider/revision evidence only and
+  makes no semantic-quality claim.
 - [ ] Replicate and qualify on the real endpoint while holding model, precision, source data, server
-  batching, pool capacity, and deadline semantics fixed, with the served provider revision pinned.
+  batching, pool capacity, and deadline semantics fixed, with the served provider revision pinned
+  in every dispatched attempt.
 - [ ] Compare scheduler-only, cache-only, latest-only, placement-only, and joint variants.
 - [ ] Measure unloaded, near-capacity, overloaded, bursty, and injected-delay/loss conditions.
 
@@ -226,16 +232,19 @@ workload rather than selecting a universal scheduler winner.
 The first real endpoint matrix used the retained 16-job/four-session `s4` plan with one endpoint
 slot and the same declared cap for FIFO, EDF, and least-slack. FIFO consumed 14/16 jobs, EDF 16/16,
 and least-slack 15/16. All three reports had zero unknown attempts, zero held charges, and no pool
-quarantine; provider-reported usage summed to 2,555 micro-USD. This is a bounded transport/capacity
-observation only. The served provider revision was not pinned, and the cohort is too small to select
-a scheduler or claim a general endpoint improvement.
+quarantine; provider-reported usage summed to 2,555 micro-USD. The retained generation audit found
+14, 16, and 15 successful metadata records for the dispatched jobs, respectively, all served by
+Together as `z-ai/glm-5.3-flash-20260826`. This remains a bounded transport/capacity observation;
+the cohort is too small to select a scheduler or claim a general endpoint improvement.
 
 The matched overloaded `s8` matrix used 32 offered jobs across eight sessions. FIFO consumed 10/32,
 EDF 11/32, and least-slack 9/32; all three reports had complete accounting and no pool quarantine,
 with 1,842 micro-USD of provider-reported usage in total. Together with the retained real R3
 one/two-session cohorts and the s4 matrix, this gives a first load curve from unloaded through
-overloaded conditions. It does not isolate injected loss, placement, cache/latest-only behavior, or
-served-provider revision, so R4 remains partial.
+overloaded conditions. The same audit found 10, 11, and 9 successful Together generation records
+for the dispatched jobs, all with served revision `z-ai/glm-5.3-flash-20260826`. It does not isolate
+injected loss, placement, cache/latest-only behavior, or broader scheduler replication, so R4 remains
+partial.
 
 The small real ablation probe is not a quality result. The corrected cache condition used one paid
 model request and served the duplicate from the exact historical cache (`1` hit, `55` micro-USD,
@@ -264,7 +273,8 @@ same-snapshot historical queries over identical retained evidence produce one ca
 queued older latest-only request is superseded by a newer snapshot. The equal-snapshot case is kept
 as a negative control because the runtime rejects ambiguous ordering. Policy caching/discarding and
 unstable observation-ID reuse are rejected. This qualifies local ablation plumbing only; no real
-cache/latest-only endpoint condition has been run yet.
+cache/latest-only endpoint condition is qualified as a general result yet; the retained real probes
+remain bounded transport/accounting observations.
 
 ### R5 — StreamBudget Quality And Cost
 

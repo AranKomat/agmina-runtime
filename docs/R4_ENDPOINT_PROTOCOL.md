@@ -35,6 +35,15 @@ completion rate, queue/complete-output latency distributions, deadline misses, q
 provider request IDs, and per-attempt charge status. Resource occupancy and GPU/energy telemetry are
 unknown unless measured by the host.
 
+For a retained real run, provider identity must be audited separately from the runtime report. The
+metadata-only `tools/r4_audit_generations.py` command queries each successful provider generation ID
+without making inference calls. `tools/r4_evaluate_endpoint_matrix.py --generation-audit PATH`
+qualifies revision pinning when every dispatched attempt in the matrix has a successful record and
+all records agree on provider and served model revision. A configured base model name may match a
+provider's dated revision suffix, such as `z-ai/glm-5.3-flash` and
+`z-ai/glm-5.3-flash-20260826`. This is identity/accounting evidence only; it is not semantic-quality
+evidence and does not reconcile invoices by itself.
+
 The first matrix can establish a scheduler-specific endpoint result only if all three conditions use
 the same declared endpoint and have complete accounting. It does not establish a universal scheduler
 winner. Follow-up load levels should reuse the same source/model and separately compare unloaded,

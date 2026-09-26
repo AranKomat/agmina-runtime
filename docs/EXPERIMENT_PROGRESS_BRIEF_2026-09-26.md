@@ -19,7 +19,7 @@ second video, so it is not a quality result.
 | R1 application bridges | Partial | StreamBudget and Physical Harness read-only bridges, lineage, fault and clock fences pass; parent task/episode identity is still absent upstream. |
 | R2 real endpoint | Partial | Direct vs Agmina GLM packet had identical request hash and usable outputs; provider/cost reconciliation remains open. |
 | R3 paced load | Partial | Real 1/2/4/8-session cohort completed; 1/2 clean, 4/8 freshness-limited. |
-| R4 scheduling | Partial, first real observation | FIFO/EDF/least-slack ran on one retained cohort with complete accounting; replication and provider-revision pinning remain. |
+| R4 scheduling | Partial, pinned bounded observations | FIFO/EDF/least-slack ran on retained 16-job and 32-job cohorts with complete accounting; Together served `z-ai/glm-5.3-flash-20260826` on all dispatched jobs, while placement and broader replication remain. |
 | R5 quality/cost | Partial | Six-case real GLM screen passed development checks; full real workload not yet clean or qualified. |
 | R6 policy transport | Partial | Native policy packet extraction and local mock direct/Agmina comparison pass; live policy and closed loop remain. |
 | R7 heterogeneous compute | Pending | Requires a stable baseline and second endpoint/device class. |
@@ -85,12 +85,18 @@ second video, so it is not a quality result.
   deadlines, and provider routing constant across FIFO, EDF, and least-slack.
 - **R4 bounded endpoint observation:** the matrix then ran once per scheduler. FIFO consumed 14/16,
   EDF 16/16, and least-slack 15/16. All charges were known (`2,555` micro-USD total), with no
-  unknown holds or pool quarantine. The served provider revision was not pinned, so this remains
-  transport/capacity evidence rather than a scheduler or quality conclusion.
+  unknown holds or pool quarantine. A metadata-only audit of the retained generation IDs succeeded
+  for all 45 dispatched jobs in the matrix: Together served `z-ai/glm-5.3-flash-20260826`. This
+  remains transport/capacity evidence rather than a scheduler or quality conclusion.
 - **R4 overloaded replication:** the same three schedulers ran on the retained 32-job/eight-session
   cohort. FIFO consumed 10/32, EDF 11/32, and least-slack 9/32, with `1,842` micro-USD known usage
-  and no unknown holds or quarantine. This extends the real load curve but does not qualify placement,
-  cache/latest-only, injected-loss, or provider-revision effects.
+  and no unknown holds or quarantine. The same audit covered all 30 dispatched jobs and found the
+  same Together-served revision. This extends the real load curve but does not qualify placement,
+  cache/latest-only, injected-loss, or broader scheduler effects.
+- **R4 provider-generation audit:** `tools/r4_audit_generations.py` queried retained OpenRouter
+  generation metadata only; it made zero model calls, and all 81/81 lookups succeeded across the
+  scheduler matrices and real cache/latest probes. The audit establishes provider/revision identity
+  for the retained attempts, not quality, semantic equivalence, or invoice reconciliation.
 - **R4 ablation plumbing:** the paced load plan now passes explicit cache/latest-only controls and
   optional stable evidence IDs into runtime jobs. Retained mock smoke `...-002` produced one cache
   hit and superseded one queued older latest-only request when a newer snapshot arrived; `...-001`
@@ -127,8 +133,8 @@ second video, so it is not a quality result.
    importer to reconcile the 2,091 real GLM attempt holds before any quality or cost claim.
 2. Reconcile the provider-side transport failure and remaining unknown attempt holds; no new
    paid full replay is justified until that is done.
-3. Pin the served provider revision and run a matched scheduler-only baseline using the same 60-second
-   deadline, then qualify placement when a second real endpoint path is available. Keep the cache and
+3. Use the now-pinned Together revision when running a matched scheduler-only replication with the
+   same 60-second deadline, then qualify placement when a second real endpoint path is available. Keep the cache and
    latest-only results as bounded observations, not general cost claims; use an isolated real proxy for
    delay/loss before comparing it with the zero-cost control, then run the fixed-rate,
    tuned-detector/motion-refresh, and StreamBudget adaptive baselines under the same held-out protocol.
