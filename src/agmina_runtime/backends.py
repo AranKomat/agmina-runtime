@@ -140,8 +140,13 @@ def usage_from_chat(value, endpoint: Endpoint):
     cost = None
     if not endpoint.externally_billed:
         cost = 0  # Only provider charges; GPU rental/energy intentionally NOT represented as zero.
+    elif (type(value.get("cost")) in (int, float) and math.isfinite(value["cost"])
+          and value["cost"] >= 0):
+        # Prefer the provider's reported charge when available. This is stronger than a
+        # configured estimate, but does not settle attempts that timed out before a response.
+        cost = int(round(value["cost"] * 1_000_000))
     elif prompt is not None and completion is not None and endpoint.input_per_million_microusd is not None and (
-        endpoint.output_per_million_microusd is not None
+            endpoint.output_per_million_microusd is not None
     ):
         # Missing cached count: conservatively price total input at uncached rate.
         cache_n = cached or 0
@@ -152,6 +157,14 @@ def usage_from_chat(value, endpoint: Endpoint):
                      + completion*endpoint.output_per_million_microusd)
         cost = (numerator + 999999)//1_000_000
     return usage.model_copy(update={"cost_microusd": cost})
+
+
+def provider_request_id(value):
+    """Return only a bounded provider generation identifier for later reconciliation."""
+    if not isinstance(value, dict):
+        return None
+    value = value.get("id")
+    return value if isinstance(value, str) and 0 < len(value) <= 256 else None
 
 
 class HttpBackend:
@@ -223,7 +236,8 @@ class HttpBackend:
                     result = {"text": text}
                     if not isinstance(text, str) or not text:
                         raise BackendFailure("missing_chat_content", termination_known=True)
-                    return Prediction(payload_json=canonical(result), usage=usage_from_chat(obj.get("usage"), endpoint))
+                    return Prediction(payload_json=canonical(result), usage=usage_from_chat(obj.get("usage"), endpoint),
+                                      provider_request_id=provider_request_id(obj))
                 if endpoint.kind == "triton":
                     if obj.get("model_name") != endpoint.model_name or (
                         endpoint.model_version is not None and obj.get("model_version") != endpoint.model_version
@@ -248,12 +262,12 @@ class HttpBackend:
             raise BackendFailure("transport_failure") from exc
 
     async def _stream_chat(self, response, endpoint):
-        text, usage, first, finished, done = [], None, None, False, False
+        text, usage, first, finished, done, request_id = [], None, None, False, False, None
         size = 0
         buffer = ""
 
         def parse_line(line):
-            nonlocal usage, first, finished, done
+            nonlocal usage, first, finished, done, request_id
             if not line.startswith("data:"):
                 return
             value = line[5:].strip()
@@ -263,6 +277,8 @@ class HttpBackend:
             if done:
                 raise ValueError("Content after DONE")
             obj = strict_json(value, max_bytes=endpoint.max_response_bytes)
+            if request_id is None:
+                request_id = provider_request_id(obj)
             if isinstance(obj.get("error"), dict):
                 error_value = obj["error"].get("code") or obj["error"].get("type") or "unknown"
                 error_code = error_value if isinstance(error_value, str) else "invalid"
@@ -307,4 +323,5 @@ class HttpBackend:
         if not done or not finished or not text:
             raise BackendFailure("incomplete_stream")
         return Prediction(payload_json=canonical({"text": "".join(text)}),
-                          usage=usage_from_chat(usage, endpoint), first_content_ns=first)
+                          usage=usage_from_chat(usage, endpoint), first_content_ns=first,
+                          provider_request_id=request_id)

@@ -149,16 +149,45 @@ class Store:
                             (value, "settled" if value is not None else "unknown", job.tenant, job.id))
 
     def reconcile(self, tenant: str, jid: str, actual_microusd: int, evidence: str, now_ns: int):
-        if type(actual_microusd) is not int or actual_microusd < 0 or not evidence:
-            raise ValueError("An explicit nonnegative charge and reconciliation evidence are required")
-        row = self.db.execute("SELECT * FROM attempts WHERE tenant=? AND job=?", (tenant, jid)).fetchone()
-        if not row or row["actual"] is not None:
-            raise ValueError("Only an unresolved attempt may be reconciled")
+        self.reconcile_many(tenant, ((jid, actual_microusd, evidence),), now_ns)
+
+    def reconcile_many(self, tenant: str, entries, now_ns: int):
+        """Atomically settle unresolved attempts from an explicit provider export.
+
+        Validation happens before the transaction so a malformed or duplicate import cannot
+        partially settle a batch. ``entries`` contains ``(job_id, actual_microusd,
+        evidence_ref)`` tuples. The evidence reference is metadata only; the provider export
+        itself remains outside the runtime ledger.
+        """
+        entries = tuple(entries)
+        seen = set()
+        for jid, actual_microusd, evidence in entries:
+            if (type(jid) is not str or not jid or len(jid) > 256 or jid in seen or
+                    type(actual_microusd) is not int or actual_microusd < 0 or
+                    type(evidence) is not str or not evidence or len(evidence) > 1024):
+                raise ValueError("Each reconciliation requires a unique job ID, nonnegative charge, "
+                                 "and bounded evidence reference")
+            seen.add(jid)
+        for jid in seen:
+            row = self.db.execute("SELECT * FROM attempts WHERE tenant=? AND job=?", (tenant, jid)).fetchone()
+            if not row:
+                raise ValueError(f"Unknown reconciliation job: {jid}")
+            if row["actual"] is not None:
+                raise ValueError(f"Attempt is already settled: {jid}")
         with self.db:
-            self.db.execute("UPDATE attempts SET actual=?,disposition='settled' WHERE tenant=? AND job=?",
-                            (actual_microusd, tenant, jid))
-        self.event(now_ns, "charge_reconciled", job_id=jid, actual_microusd=actual_microusd,
-                   evidence_ref=evidence)
+            for jid, actual_microusd, evidence in entries:
+                updated = self.db.execute(
+                    "UPDATE attempts SET actual=?,disposition='settled' "
+                    "WHERE tenant=? AND job=? AND actual IS NULL",
+                    (actual_microusd, tenant, jid),
+                ).rowcount
+                if updated != 1:
+                    raise ValueError(f"Attempt changed before reconciliation: {jid}")
+                self.db.execute(
+                    "INSERT INTO events(at_ns,kind,metadata) VALUES (?,?,?)",
+                    (now_ns, "charge_reconciled", canonical({"job_id": jid,
+                        "actual_microusd": actual_microusd, "evidence_ref": evidence})),
+                )
 
     def quarantine(self, pool: str, reason: str):
         with self.db:

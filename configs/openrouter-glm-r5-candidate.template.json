@@ -1,6 +1,6 @@
 {
   "tenant": "local",
-  "campaign": "operator-fill-r2-openrouter-glm",
+  "campaign": "operator-fill-r5-glm-candidate-002",
   "max_attempts": 6,
   "max_microusd": 250000,
   "max_queue": 16,
@@ -19,7 +19,7 @@
       "weights": "z-ai/glm-5.3-flash",
       "preprocessing": "operator-record-exact-preprocessing",
       "output_schema": "chat-text-host-validates-json",
-      "sampling": "operator-record-exact-sampling"
+      "sampling": "temperature=0;reasoning.effort=low;max_tokens=4096"
     }
   ],
   "endpoints": [
@@ -37,7 +37,7 @@
       "service_p95_ns": 15000000000,
       "transport_p95_ns": 3000000000,
       "margin_ns": 1000000000,
-      "timeout_s": 45.0,
+      "timeout_s": 180.0,
       "max_inflight": 1,
       "reserve_microusd": 50000,
       "externally_billed": true,
@@ -45,9 +45,9 @@
       "cached_per_million_microusd": null,
       "output_per_million_microusd": null,
       "stream": false,
-      "max_output_tokens": 256,
+      "max_output_tokens": 4096,
       "max_response_bytes": 2000000,
-      "extra_body_json": "{\"temperature\":0,\"provider\":{\"order\":[\"together\",\"baseten/fp8\",\"fireworks\",\"parasail/fp8\",\"coreweave/nvfp4\"],\"allow_fallbacks\":false}}"
+      "extra_body_json": "{\"reasoning\":{\"effort\":\"low\"},\"provider\":{\"order\":[\"together\",\"baseten/fp8\",\"fireworks\",\"parasail/fp8\",\"coreweave/nvfp4\"],\"allow_fallbacks\":false,\"require_parameters\":true}}"
     }
   ]
 }

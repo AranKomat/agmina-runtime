@@ -23,9 +23,31 @@ def add_parent_paths(streambudget_root: Path, physical_root: Path) -> None:
 
 
 def git_state(root: Path) -> dict[str, object]:
-    head = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
-    dirty = bool(subprocess.check_output(["git", "-C", str(root), "status", "--porcelain"], text=True).strip())
-    return {"commit": head, "dirty": dirty}
+    """Record Git provenance without rejecting a source snapshot with no .git metadata."""
+    head = subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "HEAD"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if head.returncode:
+        return {
+            "commit": None,
+            "dirty": None,
+            "metadata": "unavailable",
+            "reason": head.stderr.strip() or "not a Git checkout",
+        }
+    status = subprocess.run(
+        ["git", "-C", str(root), "status", "--porcelain"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    return {
+        "commit": head.stdout.strip(),
+        "dirty": bool(status.stdout.strip()) if status.returncode == 0 else None,
+        "metadata": "available" if status.returncode == 0 else "partial",
+    }
 
 
 async def run(args: argparse.Namespace) -> dict:

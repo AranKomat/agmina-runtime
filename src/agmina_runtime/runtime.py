@@ -244,7 +244,8 @@ class Runtime:
                 state = JobState.SUCCEEDED
             done = old.model_copy(update={"state": state, "reason": reason, "completed_ns": now,
                                           "computed_ns": now, "prediction_json": result.payload_json,
-                                          "usage": result.usage, "first_content_ns": result.first_content_ns})
+                                          "usage": result.usage, "first_content_ns": result.first_content_ns,
+                                          "provider_request_id": result.provider_request_id})
             self.store.receipt(job.tenant, done)
             if state == JobState.SUCCEEDED:
                 self.cache.put(cache_key, result.payload_json, now)
@@ -319,9 +320,14 @@ class Runtime:
         start = asyncio.get_running_loop().time()
         while True:
             self.tick()
-            r = self.result(job_id)
+            job, r = self.store.job(self.config.tenant, job_id)
             if r.state not in {JobState.QUEUED, JobState.RUNNING}:
                 return r
+            if r.state == JobState.QUEUED:
+                eligible = [e for e in self.config.endpoints
+                            if e.model == job.model and e.site in job.allowed_sites]
+                if eligible and all(e.pool in self.store.quarantined() for e in eligible):
+                    raise RuntimeError("Job blocked: all eligible endpoint pools are quarantined")
             if asyncio.get_running_loop().time()-start > timeout_s:
                 raise TimeoutError("Client wait elapsed; work may still run, call cancel explicitly")
             await asyncio.sleep(.001)

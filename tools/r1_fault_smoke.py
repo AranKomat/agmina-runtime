@@ -1,4 +1,4 @@
-"""Exercise parent-side late-result and shutdown ownership with no model calls.
+"""Exercise parent-side late-result, generation, and shutdown ownership with no model calls.
 
 This uses the actual StreamBudget runtime and Physical Harness discovery worker.  The model
 callbacks are bounded local fixtures; the campaign checks parent delivery/authority behavior, not
@@ -23,8 +23,38 @@ def add_parent_paths(streambudget_root: Path, physical_root: Path) -> None:
     sys.path.insert(0, str(physical_root))
 
 
-def git_head(root: Path) -> str:
-    return subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+def git_head(root: Path) -> str | None:
+    """Return the parent revision when available; source snapshots may have no Git metadata."""
+    result = subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "HEAD"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    return result.stdout.strip() if result.returncode == 0 else None
+
+
+def git_state(root: Path) -> dict[str, object]:
+    """Record provenance without rejecting a parent source snapshot lacking .git metadata."""
+    head = subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "HEAD"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if head.returncode:
+        return {"commit": None, "dirty": None, "metadata": "unavailable"}
+    status = subprocess.run(
+        ["git", "-C", str(root), "status", "--porcelain"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    return {
+        "commit": head.stdout.strip(),
+        "dirty": bool(status.stdout.strip()) if status.returncode == 0 else None,
+        "metadata": "available" if status.returncode == 0 else "partial",
+    }
 
 
 def wait_for_completed(worker, timeout_s: float = 2.0) -> tuple:
@@ -74,8 +104,104 @@ def semantic_response(request: object) -> dict:
     }
 
 
-async def streambudget_shutdown(StreamConfig, StreamRuntime, Result, Watch, out: Path) -> dict:
-    class SlowPool:
+def fixture_jpeg() -> bytes:
+    from PIL import Image
+
+    image = Image.new("RGB", (8, 8), "white")
+    image_buffer = io.BytesIO()
+    image.save(image_buffer, format="JPEG")
+    return image_buffer.getvalue()
+
+
+async def streambudget_faults(StreamConfig, StreamRuntime, Result, Watch, out: Path) -> dict:
+    class BlockingPool:
+        def __init__(self):
+            self.entered = asyncio.Event()
+            self.cancelled = False
+            self.calls = 0
+
+        async def call(self, role, request):
+            self.calls += 1
+            self.entered.set()
+            try:
+                await asyncio.Event().wait()
+            except asyncio.CancelledError:
+                self.cancelled = True
+                raise
+
+        async def close(self):
+            return None
+
+    # One running observation and one queued observation are both terminated by shutdown.
+    shutdown_host = StreamRuntime(
+        StreamConfig(scheduler={"workers": 1, "deadline_s": 2, "drain_timeout_s": 1}),
+        out / "streambudget-shutdown",
+    )
+    shutdown_pool = BlockingPool()
+    shutdown_host.pool = shutdown_pool
+    try:
+        shutdown_host.register_watch(Watch(id="fixture-a", source="cam-a", goal="fixture object"))
+        shutdown_host.register_watch(Watch(id="fixture-b", source="cam-b", goal="fixture object"))
+        jpeg = fixture_jpeg()
+        await shutdown_host.ingest_frame("cam-a", 1.0, jpeg)
+        await asyncio.wait_for(shutdown_pool.entered.wait(), timeout=1)
+        await shutdown_host.ingest_frame("cam-b", 1.0, jpeg)
+        pending_before_close = len(shutdown_host.scheduler.pending)
+        await shutdown_host.close()
+        shutdown = {
+            "inflight_entered": True,
+            "backend_cancelled": shutdown_pool.cancelled,
+            "backend_calls": shutdown_pool.calls,
+            "pending_before_close": pending_before_close,
+            "pending_after_close": len(shutdown_host.scheduler.pending),
+            "alerts_after_close": len(shutdown_host.alerts),
+            "scheduler_closed": shutdown_host.scheduler.closed,
+        }
+    finally:
+        if not shutdown_host.closed:
+            await shutdown_host.close()
+
+    class ReleasedPool:
+        def __init__(self):
+            self.entered = asyncio.Event()
+            self.release = asyncio.Event()
+
+        async def call(self, role, request):
+            self.entered.set()
+            await self.release.wait()
+            return Result(json.dumps({
+                "caption": "fixture",
+                "facts": {},
+                "checks": [{"watch_id": "cancelled", "status": "yes",
+                            "confidence": 1.0, "detail": "fixture"}],
+            }), None, 0.0, "fixture")
+
+        async def close(self):
+            return None
+
+    # A response for a cancelled watch cannot emit an alert.
+    cancelled_host = StreamRuntime(
+        StreamConfig(scheduler={"workers": 1, "deadline_s": 1, "drain_timeout_s": 1}),
+        out / "streambudget-cancelled-watch",
+    )
+    cancelled_pool = ReleasedPool()
+    cancelled_host.pool = cancelled_pool
+    try:
+        cancelled_host.register_watch(Watch(id="cancelled", source="cam", goal="fixture object"))
+        await cancelled_host.ingest_frame("cam", 1.0, fixture_jpeg())
+        await asyncio.wait_for(cancelled_pool.entered.wait(), timeout=1)
+        cancelled_host.cancel_watch("cancelled")
+        cancelled_pool.release.set()
+        await cancelled_host.drain()
+        cancelled_watch = {
+            "alerts": len(cancelled_host.alerts),
+            "watch_done": cancelled_host.watches["cancelled"].done,
+            "watch_last_status": cancelled_host.watches["cancelled"].last_status,
+        }
+    finally:
+        await cancelled_host.close()
+
+    class TimeoutPool:
         def __init__(self):
             self.entered = asyncio.Event()
             self.cancelled = False
@@ -87,28 +213,33 @@ async def streambudget_shutdown(StreamConfig, StreamRuntime, Result, Watch, out:
             except asyncio.CancelledError:
                 self.cancelled = True
                 raise
-            return Result(json.dumps({"caption": "late", "facts": {}, "checks": []}), None, .2, "fixture")
+            return Result(json.dumps({"caption": "late", "facts": {}, "checks": []}),
+                          None, .2, "fixture")
 
         async def close(self):
             return None
 
-    host = StreamRuntime(StreamConfig(), out / "streambudget-shutdown")
-    pool = SlowPool()
-    host.pool = pool
+    # The parent deadline contains a slow response and prevents a late alert.
+    timeout_host = StreamRuntime(
+        StreamConfig(scheduler={"workers": 1, "deadline_s": .03, "drain_timeout_s": 1}),
+        out / "streambudget-timeout",
+    )
+    timeout_pool = TimeoutPool()
+    timeout_host.pool = timeout_pool
     try:
-        host.register_watch(Watch(id="fixture", source="cam", goal="fixture object"))
-        from PIL import Image
-        image = Image.new("RGB", (8, 8), "white")
-        image_buffer = io.BytesIO()
-        image.save(image_buffer, format="JPEG")
-        await host.ingest_frame("cam", 1.0, image_buffer.getvalue())
-        await asyncio.wait_for(pool.entered.wait(), timeout=1)
-        await host.close()
-        return {"inflight_entered": True, "backend_cancelled": pool.cancelled,
-                "alerts_after_close": len(host.alerts), "scheduler_closed": host.scheduler.closed}
+        timeout_host.register_watch(Watch(id="timeout", source="cam", goal="fixture object"))
+        await timeout_host.ingest_frame("cam", 1.0, fixture_jpeg())
+        await asyncio.wait_for(timeout_pool.entered.wait(), timeout=1)
+        await timeout_host.drain()
+        timeout = {
+            "backend_cancelled": timeout_pool.cancelled,
+            "alerts": len(timeout_host.alerts),
+            "job_failed_events": timeout_host.trace.counts.get("job_failed", 0),
+        }
     finally:
-        if not host.closed:
-            await host.close()
+        await timeout_host.close()
+
+    return {"shutdown": shutdown, "cancelled_watch": cancelled_watch, "timeout": timeout}
 
 
 def physical_faults(Journal, AsyncDiscovery, SemanticInventory, SemanticKeyframes,
@@ -144,7 +275,10 @@ def physical_faults(Journal, AsyncDiscovery, SemanticInventory, SemanticKeyframe
                                                 episode="episode-shutdown", task_revision="task-v1",
                                                 submitted=submitted, deadline=submitted + 2)
 
+        invoked_request_ids = []
+
         def blocked_invoke(request, deadline):
+            invoked_request_ids.append(request.id)
             entered.set()
             release.wait(2)
             return semantic_response(request)
@@ -154,9 +288,16 @@ def physical_faults(Journal, AsyncDiscovery, SemanticInventory, SemanticKeyframe
         shutdown_worker.submit(shutdown_request)
         if not entered.wait(1):
             raise TimeoutError("shutdown fixture never entered invoke")
+        pending_request, _ = physical_request(
+            Basis, FrameRef, RegionRef, DiscoveryRequest,
+            episode="episode-shutdown", task_revision="task-v2",
+            submitted=time.monotonic(), deadline=time.monotonic() + 2,
+        )
+        shutdown_worker.submit(pending_request)
         close_before_release = shutdown_worker.close(.01)
         release.set()
         close_after_release = shutdown_worker.close(1)
+        shutdown_records = shutdown_journal.records(AsyncDiscovery.KIND)
 
         submitted = time.monotonic()
         old_request, _ = physical_request(Basis, FrameRef, RegionRef, DiscoveryRequest,
@@ -182,7 +323,11 @@ def physical_faults(Journal, AsyncDiscovery, SemanticInventory, SemanticKeyframe
             "late": {"error_type": late_completion.error_type, "delivered_result": late_completion.result is not None},
             "shutdown": {"close_before_release": close_before_release,
                           "close_after_release": close_after_release,
-                          "reserved_calls": len(shutdown_journal.records(AsyncDiscovery.KIND))},
+                          "reserved_calls": sum(row["event"] == "reserved" for row in shutdown_records),
+                          "cancelled_pending": any(row["event"] == "cancelled_before_call"
+                                                   and row["request_id"] == pending_request.id
+                                                   for row in shutdown_records),
+                          "invoked_request_ids": invoked_request_ids},
             "old_task": {"delivered": len(delivered), "historical_only": bool(delivered and delivered[0].get("historical_only")),
                           "executive_pending": len(cadence.pending), "inventory_records": len(inventory.records)},
         }
@@ -212,7 +357,7 @@ async def run(args: argparse.Namespace) -> dict:
     from streambudget.types import Watch
 
     args.out.mkdir(parents=False, exist_ok=False)
-    stream = await streambudget_shutdown(StreamConfig, StreamRuntime, Result, Watch, args.out)
+    stream = await streambudget_faults(StreamConfig, StreamRuntime, Result, Watch, args.out)
     physical = physical_faults(Journal, AsyncDiscovery, SemanticInventory, SemanticKeyframes,
                                ExecutiveCadence, DiscoveryCoordinator, Basis, FrameRef, RegionRef,
                                DiscoveryRequest, args.out)
@@ -220,17 +365,37 @@ async def run(args: argparse.Namespace) -> dict:
         "protocol": "R1 parent fault and shutdown smoke",
         "streambudget_commit": git_head(args.streambudget_root),
         "physical_commit": git_head(args.physical_root),
+        "parent_provenance": {
+            "streambudget": git_state(args.streambudget_root),
+            "physical": git_state(args.physical_root),
+        },
         "paid_model_calls": 0,
         "gpu_calls": 0,
         "native_actions": 0,
         "streambudget": stream,
         "physical": physical,
     }
-    if stream["alerts_after_close"] != 0 or not stream["scheduler_closed"]:
+    if (stream["shutdown"]["alerts_after_close"] != 0
+            or not stream["shutdown"]["scheduler_closed"]
+            or not stream["shutdown"]["backend_cancelled"]
+            or stream["shutdown"]["backend_calls"] != 1
+            or stream["shutdown"]["pending_before_close"] != 2
+            or stream["shutdown"]["pending_after_close"] != 0):
         raise AssertionError("StreamBudget delivered or retained an alert after shutdown")
+    if (stream["cancelled_watch"]["alerts"] != 0
+            or not stream["cancelled_watch"]["watch_done"]
+            or stream["cancelled_watch"]["watch_last_status"] != "unknown"):
+        raise AssertionError("StreamBudget cancelled-watch result crossed the cancellation boundary")
+    if (not stream["timeout"]["backend_cancelled"] or stream["timeout"]["alerts"] != 0
+            or stream["timeout"]["job_failed_events"] != 1):
+        raise AssertionError("StreamBudget late call was not contained by its deadline")
     if physical["late"]["error_type"] != "TimeoutError" or physical["late"]["delivered_result"]:
         raise AssertionError("Late Physical Harness result was not rejected")
-    if physical["shutdown"]["close_before_release"] or not physical["shutdown"]["close_after_release"]:
+    if (physical["shutdown"]["close_before_release"]
+            or not physical["shutdown"]["close_after_release"]
+            or not physical["shutdown"]["cancelled_pending"]
+            or physical["shutdown"]["reserved_calls"] != 2
+            or len(physical["shutdown"]["invoked_request_ids"]) != 1):
         raise AssertionError("Physical shutdown did not expose in-flight ambiguity")
     if not physical["old_task"]["historical_only"] or physical["old_task"]["executive_pending"]:
         raise AssertionError("Old-task result crossed the current executive boundary")

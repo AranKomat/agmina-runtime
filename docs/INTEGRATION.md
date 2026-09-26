@@ -9,9 +9,13 @@ The integration design was checked through GitHub reads at:
 - `AranKomat/physical-agent-harness`: `cc03d4ed1ecb1664d9c1d04f6adc13786385f6d5`.
   `physical_harness/perception/contracts.py`: `FrameRef`, `DiscoveryRequest`.
 
-Full checkouts could not be cloned in this execution environment. Bridge tests use explicit
-contract-shape fixtures. The full upstream tests and live workflows were not run here. Treat a newer
-upstream commit as a new integration target; inspect changed interfaces before enabling an adapter.
+The current workspace also contains a local StreamBudget checkout and a Physical Harness source
+snapshot used by the R1 campaigns. StreamBudget reports commit
+`076783012377d074b82efd7aaf296a8175b3a7f4` and a dirty working tree; the Physical Harness snapshot
+has no `.git` metadata, so its revision is recorded as unavailable in fresh reports. These local
+sources are evidence for the recorded smoke only; do not infer that they equal the GitHub reference
+revisions above. Treat a newer upstream commit as a new integration target and inspect changed
+interfaces before enabling an adapter.
 
 ## StreamBudget
 
@@ -48,6 +52,14 @@ The returned Prediction contains `{"text": "..."}` for chat. Construct the host'
 text, measured latency, request ID, and appropriately mapped usage. Keep normalized Agmina token
 fields distinct from the host provider schema. Unknown charges remain unresolved in both views.
 
+Provider reconciliation is an explicit offline operator step. `tools/reconcile_charges.py` accepts
+only bounded JSON/JSONL rows with the exact Agmina `job_id`, a nonnegative integer
+`actual_microusd`, and an `evidence_ref` identifying the provider export or receipt. It runs as a
+dry-run unless `--apply` is supplied, validates the whole batch before writing, and rejects duplicate,
+unknown, or already-settled jobs. A provider generation ID is useful evidence for future campaigns,
+but it is not enough unless the export also maps it to the exact Agmina job. Never assign aggregate
+account usage to one campaign or turn a missing invoice row into a zero-cost settlement.
+
 No optional embedding/VSS/RTSP feature is recreated here. Existing live input and evidence storage
 continue to belong to StreamBudget.
 
@@ -76,8 +88,55 @@ The `ActionChunk` envelope checks named dimensions, units, normalization convent
 shape. It deliberately does not pad a DROID action to R1Pro, turn joint commands into EEF commands,
 retime a learned policy, reset hidden state, or perform inverse kinematics.
 
+For the inspected R1Pro loopback server, `adapters.native_policy` provides a narrower proposal-only
+boundary. The host calls `HttpNativePolicyTransport.reset()` at episode setup, outside Agmina; each
+Agmina job then carries the native stamp, instruction, 61-element proprio vector and the three native
+camera arrays. The backend validates the returned stamp and finite 23-channel action rows without
+resizing, padding, retiming or authorizing them. This qualifies the reset/infer RPC envelope locally;
+it does not qualify a checkpoint, GPU latency, simulator behavior or live actuation.
+
 The current native Phase 5–9 gates remain unchanged. A scheduler experiment is not motion permission.
 Agmina has no method that drives a motor, writes WorldState geometry or marks a task complete.
+
+`tools/r6_native_policy_compare.py` is the prepared campaign runner for the next R6 gate. It resets
+the native server separately for the direct and routed paths, sends the same ordered packet cohort
+through each path, records per-call complete-output latencies and the Agmina ledger trace, and
+rejects any output mismatch. It requires explicit operator metadata for weights, preprocessing,
+output schema, sampling, model revision and hardware/server details; the runner reports transport
+equivalence only.
+
+### R6 live-run recipe
+
+On a qualified GPU host, start the already-pinned Behavior-Skill server in its own policy
+environment. The server is loopback-only and does not authorize actions:
+
+```bash
+python -m physical_ai.behavior_skill_server \
+  --source /workspace/physical-ai-lab \
+  --checkpoint /workspace/behavior-skill-weights/pi05-pt50-skill \
+  --manifest /workspace/behavior-skill-weights/manifest.json \
+  --receipt /tmp/r6-policy.json --port 8011
+```
+
+After recording the exact checkpoint revision, preprocessing, hardware, precision, and server
+revision, run the five prepared packets in order:
+
+```bash
+./.venv/bin/python tools/r6_native_policy_compare.py \
+  --packet runs/r6-native-packet-001/packet.json \
+  --packet runs/r6-native-packet-002/packet.json \
+  --packet runs/r6-native-packet-003/packet.json \
+  --packet runs/r6-native-packet-004/packet.json \
+  --packet runs/r6-native-packet-005/packet.json \
+  --out runs/r6-native-live-001 --model-name behavior-skill \
+  --model-version PINNED_SERVER_REVISION --weights PINNED_CHECKPOINT_REVISION \
+  --preprocessing PINNED_PREPROCESSING --output-schema PINNED_OUTPUT_SCHEMA \
+  --sampling PINNED_SAMPLING --estimate-s SERVICE_P95_SECONDS \
+  --allow-network
+```
+
+Keep action admission disabled. A successful run qualifies only the native transport comparison;
+closed-loop motion still requires a separate authorization and independent outcome verification.
 
 ## Models and transport adapters
 

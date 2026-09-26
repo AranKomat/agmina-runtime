@@ -133,7 +133,7 @@ class Job(Contract):
     operation: Name
     workload: Literal["policy", "segmentation", "semantic", "mapping", "query"]
     result_kind: ResultKind
-    observations: tuple[Observation, ...] = Field(min_length=1, max_length=32)
+    observations: tuple[Observation, ...] = Field(min_length=0, max_length=32)
     snapshot_ns: Ns
     deadline_ns: Ns
     max_age_ns: Ns | None = None
@@ -153,6 +153,8 @@ class Job(Contract):
 
     @model_validator(mode="after")
     def valid(self):
+        if not self.observations and self.workload != "query":
+            raise ValueError("Evidence-bound jobs require at least one observation")
         if self.deadline_ns <= self.snapshot_ns:
             raise ValueError("Deadline must follow evidence cutoff")
         if len({o.id for o in self.observations}) != len(self.observations):
@@ -249,6 +251,8 @@ class Prediction(Contract):
     payload_json: str
     usage: Usage = Usage()
     first_content_ns: Ns | None = None
+    # Provider-generation ID only; never store response text or credentials here.
+    provider_request_id: str | None = Field(default=None, max_length=256)
     @field_validator("payload_json")
     @classmethod
     def valid_payload(cls, value):
@@ -268,6 +272,7 @@ class Receipt(Contract):
     first_content_ns: Ns | None = None
     prediction_json: str | None = None
     usage: Usage | None = None
+    provider_request_id: str | None = Field(default=None, max_length=256)
     cache_hit: bool = False
     consumed_by: Name | None = None
     consumed_ns: Ns | None = None

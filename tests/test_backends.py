@@ -30,13 +30,14 @@ async def test_nonstream_chat_contract(clock, session):
     seen = []
     async def handler(req):
         seen.append(json.loads(req.content))
-        return httpx.Response(200, json={"model": "test-model", "choices": [
+        return httpx.Response(200, json={"id": "gen-123", "model": "test-model", "choices": [
             {"message": {"content": '{"object":"box"}'}, "finish_reason": "stop"}],
             "usage": {"prompt_tokens": 20, "completion_tokens": 4}})
     backend = HttpBackend(clock, transport=httpx.MockTransport(handler))
     r = await backend.infer(packet(session, clock), chat_ep())
     assert json.loads(r.payload_json)["text"] == '{"object":"box"}'
     assert r.usage.input_tokens == 20 and r.first_content_ns is None
+    assert r.provider_request_id == "gen-123"
     assert seen[0]["max_tokens"] == 256
     assert "Authorization" not in canonical(seen)
     await backend.close()
@@ -44,8 +45,8 @@ async def test_nonstream_chat_contract(clock, session):
 
 async def test_stream_chat_complete(clock, session):
     events = [
-        {"model":"test-model", "choices":[{"delta":{"content":"{"}, "finish_reason":None}]},
-        {"model":"test-model", "choices":[{"delta":{"content":"\"x\":1}"}, "finish_reason":"stop"}]},
+        {"id":"gen-456", "model":"test-model", "choices":[{"delta":{"content":"{"}, "finish_reason":None}]},
+        {"id":"gen-456", "model":"test-model", "choices":[{"delta":{"content":"\"x\":1}"}, "finish_reason":"stop"}]},
         {"model":"test-model", "choices":[], "usage":{"prompt_tokens":8,"completion_tokens":4,
             "prompt_tokens_details":{"cached_tokens":5}, "completion_tokens_details":{"reasoning_tokens":2}}},
     ]
@@ -56,6 +57,7 @@ async def test_stream_chat_complete(clock, session):
     assert r.first_content_ns == clock.now_ns()
     assert r.usage.cached_input_tokens == 5
     assert r.usage.reasoning_output_tokens == 2  # Already included in four output tokens.
+    assert r.provider_request_id == "gen-456"
     await backend.close()
 
 
@@ -180,6 +182,9 @@ def test_usage_pricing():
                         "completion_tokens_details":{"reasoning_tokens":5}}, e)
     assert u.cost_microusd == 75
     assert usage_from_chat(None, e).cost_microusd is None
+    reported = usage_from_chat({"prompt_tokens": 1, "completion_tokens": 1, "cost": 0.0001234},
+                               chat_ep(externally_billed=True, reserve_microusd=1))
+    assert reported.cost_microusd == 123
 
 
 @pytest.mark.parametrize("changes", [

@@ -58,6 +58,27 @@ def streambudget_job(request, *, session: Session, clock_map: ClockMap, now_ns: 
                max_age_ns=max_age_ns, max_uncertainty_ns=clock_map.error_ns, payload_json=canonical(body))
 
 
+def streambudget_text_job(request, *, session: Session, now_ns: int, snapshot_ns: int,
+                          deadline_ns: int, model: str, job_id: str,
+                          result_kind=ResultKind.HISTORICAL):
+    """Convert a text-only StreamBudget request into an explicit query job.
+
+    Planner/memory requests carry their complete bounded prompt in the payload rather than
+    pretending that a source image was observed. They remain task/session-bound, but are not
+    evidence-bound; non-query jobs still require observations in the core contract.
+    """
+    if request.images:
+        raise ValueError("Text bridge does not accept image inputs; use streambudget_job")
+    body = {"messages": [{"role": "system", "content": request.system},
+                         {"role": "user", "content": request.text}],
+            "response_format": {"type": "json_object"}}
+    return Job(id=job_id, tenant=session.tenant, session_id=session.id, epoch=session.epoch,
+               task_revision=session.task_revision, clock_id=session.clock_id, model=model,
+               operation=request.operation, workload="query", result_kind=result_kind,
+               observations=(), snapshot_ns=snapshot_ns, deadline_ns=deadline_ns,
+               max_uncertainty_ns=0, payload_json=canonical(body))
+
+
 def physical_observation(frame, blob: bytes, *, sequence: int, clock_map: ClockMap,
                          clock_id: str, now_ns: int, role: Literal["current", "context"] = "current"):
     """Convert perception.contracts.FrameRef using monotonic wall, NEVER sim_time as wall."""

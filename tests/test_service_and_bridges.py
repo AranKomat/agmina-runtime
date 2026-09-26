@@ -1,10 +1,16 @@
 import hashlib
+import json
 from types import SimpleNamespace
 
 import httpx
 import pytest
 
-from agmina_runtime.adapters.hosts import ActionChunk, physical_observation, streambudget_job
+from agmina_runtime.adapters.hosts import (
+    ActionChunk,
+    physical_observation,
+    streambudget_job,
+    streambudget_text_job,
+)
 from agmina_runtime.client import Client, validate_delivery
 from agmina_runtime.clocks import ClockMap
 from agmina_runtime.contracts import JobState, ResultKind
@@ -88,6 +94,20 @@ def test_streambudget_shape_bridge(session,clock):
     with pytest.raises(ValueError):
         streambudget_job(req,session=session,clock_map=m,now_ns=clock.now_ns(),snapshot_ns=clock.now_ns(),
             deadline_ns=clock.now_ns()+1_000_000_000,model="model",job_id="job",sequence_by_id={},available_by_id={})
+
+
+def test_streambudget_text_bridge_is_explicit_query(session, clock):
+    req = SimpleNamespace(operation="plan", system="system", text="question", images=[], context={})
+    job = streambudget_text_job(req, session=session, now_ns=clock.now_ns(),
+                                snapshot_ns=clock.now_ns(), deadline_ns=clock.now_ns() + 1_000_000_000,
+                                model="model", job_id="text-job")
+    assert job.workload == "query" and job.observations == ()
+    assert json.loads(job.payload_json)["messages"][1]["content"] == "question"
+    with pytest.raises(ValueError, match="image inputs"):
+        streambudget_text_job(SimpleNamespace(operation="plan", system="s", text="t",
+                                              images=[SimpleNamespace()], context={}),
+                              session=session, now_ns=clock.now_ns(), snapshot_ns=clock.now_ns(),
+                              deadline_ns=clock.now_ns() + 1_000_000_000, model="model", job_id="bad")
 
 
 def test_physical_frame_uses_wall_not_sim(clock):

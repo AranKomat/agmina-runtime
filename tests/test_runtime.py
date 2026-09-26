@@ -22,6 +22,16 @@ async def test_success_and_consumer_fence(runtime, session, clock):
     await runtime.close()
 
 
+async def test_wait_fails_fast_when_all_eligible_pools_are_quarantined(runtime, session, clock):
+    runtime.store.quarantine("gpu", "test_unconfirmed_backend_termination")
+    job = make_job(session, clock.now_ns())
+    assert runtime.submit(job).state == JobState.QUEUED
+    with pytest.raises(RuntimeError, match="eligible endpoint pools are quarantined"):
+        await runtime.wait(job.id, timeout_s=1)
+    assert runtime.result(job.id).state == JobState.QUEUED
+    await runtime.close()
+
+
 async def test_fresh_on_complete_stale_on_consume(runtime, session, clock):
     j = make_job(session, clock.now_ns())
     runtime.submit(j)

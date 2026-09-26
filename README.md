@@ -50,7 +50,8 @@ labels all outputs as simulated. It never infers physical task success from met 
 * **Resource pools:** a cooperative slot budget across model workers sharing the same accelerator.
   Default one slot. No claim of GPU memory isolation, SM partitioning or kernel preemption.
 * **Durable SQLite accounting:** estimated reservations, attempt caps, unknown-charge holds,
-  reconciliation and explicit extensions. Crashed in-flight work is never automatically retried.
+  explicit provider-export reconciliation and explicit extensions. Crashed in-flight work is never
+  automatically retried. Charge imports are dry-run by default and require exact unresolved job IDs.
 * **Cancellation discipline:** a cancelled consumer cannot consume the answer, but in-flight work
   keeps its slot. Unknown termination quarantines the pool until an explicit operator check.
 * **Exact historical-result reuse and explicit latest-only queued replacement:** bounded,
@@ -93,6 +94,22 @@ agmina serve --config configs/mock.json --database runs/sidecar/ledger.sqlite --
 The authenticated API exposes sessions, jobs, result consumption, cancellation and metrics.
 Credentials are environment references, not source files. No arbitrary endpoint registration or
 remote image fetching is exposed. Do not expose this research server directly to the Internet.
+
+## Reconcile provider charges
+
+Unknown externally billed attempts keep their admission holds until a provider export identifies the
+exact Agmina job and charge. Prepare JSON or JSONL records containing exactly `job_id`,
+`actual_microusd`, and `evidence_ref`, then preflight before applying:
+
+```bash
+python tools/reconcile_charges.py --database runs/CAMPAIGN/ledger.sqlite \
+  --tenant local --input provider-charges.jsonl
+python tools/reconcile_charges.py --database runs/CAMPAIGN/ledger.sqlite \
+  --tenant local --input provider-charges.jsonl --apply
+```
+
+The importer rejects unknown, duplicate, and already-settled jobs and applies a valid batch
+atomically. It never queries the provider, assigns aggregate account usage, or infers zero cost.
 
 ## Scope boundaries
 
