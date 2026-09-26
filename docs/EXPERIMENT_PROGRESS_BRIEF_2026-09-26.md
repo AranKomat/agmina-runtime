@@ -97,6 +97,10 @@ second video, so it is not a quality result.
   generation metadata only; it made zero model calls, and all 81/81 lookups succeeded across the
   scheduler matrices and real cache/latest probes. The audit establishes provider/revision identity
   for the retained attempts, not quality, semantic equivalence, or invoice reconciliation.
+- **R4 bursty replication:** a fresh all-at-once 16-job matrix completed 16/16 under FIFO, EDF, and
+  least-slack with zero unknown charges. EDF had the lowest median queue/completion latency
+  (`10.18/12.21 s`), ahead of FIFO (`14.94/16.55 s`) and least-slack (`10.99/12.92 s`). This is
+  a bounded burst-handling observation on one endpoint, not a universal scheduler ranking.
 - **R4 ablation plumbing:** the paced load plan now passes explicit cache/latest-only controls and
   optional stable evidence IDs into runtime jobs. Retained mock smoke `...-002` produced one cache
   hit and superseded one queued older latest-only request when a newer snapshot arrived; `...-001`

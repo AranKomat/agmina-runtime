@@ -212,11 +212,19 @@ evidence that any particular provider actually served a request.
   `runs/r4-provider-generation-audit-20260926-001` returned 81/81 successful records, all from
   Together serving `z-ai/glm-5.3-flash-20260826`. The audit is provider/revision evidence only and
   makes no semantic-quality claim.
+- [x] Run a fresh bursty all-at-once scheduler matrix with the same retained payloads, one endpoint
+  slot, and a 60-second deadline; see `runs/r4-bursty-20260926-001`. FIFO, EDF, and least-slack
+  each consumed 16/16 with zero unknown attempts. EDF had the lowest bounded median queue and
+  completion times (`10.18 s` / `12.21 s`) versus FIFO (`14.94 s` / `16.55 s`) and least-slack
+  (`10.99 s` / `12.92 s`). Generation metadata was complete and pinned to Together's
+  `z-ai/glm-5.3-flash-20260826`; this is not a universal scheduler result.
 - [ ] Replicate and qualify on the real endpoint while holding model, precision, source data, server
   batching, pool capacity, and deadline semantics fixed, with the served provider revision pinned
   in every dispatched attempt.
 - [ ] Compare scheduler-only, cache-only, latest-only, placement-only, and joint variants.
-- [ ] Measure unloaded, near-capacity, overloaded, bursty, and injected-delay/loss conditions.
+- [x] Measure unloaded/near-capacity, overloaded, and bursty conditions in retained real matrices;
+  injected-delay/loss remains zero-cost control evidence until an isolated real proxy is available.
+- [ ] Measure an isolated real-link delay/loss condition and compare it with the deterministic mock.
 
 **Current limitation:** synthetic replay is evidence for coordinator behavior only, not endpoint
 throughput or semantic quality.
@@ -265,7 +273,16 @@ The matched no-replacement baseline used the same three jobs, source packet, end
 deadline. It consumed all three jobs for 204 micro-USD known usage. Latest-only consumed the blocker
 and newer request while superseding the older queued request, for 151 micro-USD. The resulting 53
 micro-USD difference is a bounded request-suppression observation; it is not a model-quality or
-general cost claim, especially while the served provider revision remains unpinned.
+general cost claim, especially while semantic equivalence remains unqualified. The retained
+generation audit does pin the provider/revision for these attempts to Together's
+`z-ai/glm-5.3-flash-20260826`.
+
+The fresh bursty matrix offered all 16 retained jobs at the same source-time boundary with a
+60-second deadline. FIFO, EDF, and least-slack each consumed all 16 jobs, with zero unknown or held
+charges and `2,933` micro-USD of known usage in aggregate. EDF's queue/completion p50 was
+`10.18/12.21` seconds, compared with FIFO's `14.94/16.55` and least-slack's `10.99/12.92`.
+This is useful burst-handling evidence under one endpoint and one retained payload cohort; it does
+not establish semantic equivalence, a universal scheduler ranking, or placement behavior.
 
 The load driver now passes explicit `cacheable`, `replace_key`, `discardable`, `operation`, and
 optional stable `observation_ids` fields into `Job`. The retained zero-cost smoke confirms that two
